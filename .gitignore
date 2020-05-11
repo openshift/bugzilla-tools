@@ -1,0 +1,49 @@
+react-material
+get-all-bugs
+bug-test
+
+githubKey
+shiftzilla_cfg.yaml
+
+bugzillaKey
+get-all-bugs
+testBugData
+
+# Created by https://www.gitignore.io/api/go,react
+# Edit at https://www.gitignore.io/?templates=go,react
+
+### Go ###
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+### Go Patch ###
+/vendor/
+/Godeps/
+
+### react ###
+.DS_*
+*.log
+logs
+**/*.backup.*
+**/*.back.*
+
+node_modules
+bower_components
+
+*.sublime*
+
+psd
+thumb
+sketch
+
+# End of https://www.gitignore.io/api/go,react
