@@ -2,12 +2,12 @@ react-material
 /get-all-bugs
 /stats
 /bugs-per-team
+/get-all-bugs
 
 githubKey
 testTeamData.yml
 
 bugzillaKey
-get-all-bugs
 testBugData
 
 # Created by https://www.gitignore.io/api/go,react
