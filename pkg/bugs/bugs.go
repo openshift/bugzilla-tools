@@ -9,6 +9,7 @@ import (
 	"github.com/eparis/bugzilla"
 	"github.com/eparis/react-material/pkg/teams"
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -23,6 +24,42 @@ const (
 )
 
 type BugMap map[string][]*bugzilla.Bug
+
+func (b BugMap) FilterByTargetRelease(sTargets []string) BugMap {
+	targets := sets.NewString(sTargets...)
+	out := BugMap{}
+
+	for team, bugs := range b {
+		filtered := []*bugzilla.Bug{}
+		for i := range bugs {
+			bug := bugs[i]
+			if !targets.Has(bug.TargetRelease[0]) {
+				continue
+			}
+			filtered = append(filtered, bug)
+		}
+		out[team] = filtered
+	}
+	return out
+}
+
+func (b BugMap) FilterBySeverity(sSeverities []string) BugMap {
+	severities := sets.NewString(sSeverities...)
+	out := BugMap{}
+
+	for team, bugs := range b {
+		filtered := []*bugzilla.Bug{}
+		for i := range bugs {
+			bug := bugs[i]
+			if !severities.Has(bug.Severity) {
+				continue
+			}
+			filtered = append(filtered, bug)
+		}
+		out[team] = filtered
+	}
+	return out
+}
 
 func (b BugMap) CountAll(team string) int {
 	return len(b[team])
@@ -183,8 +220,7 @@ func getNotUpcomingSprintQuery() bugzilla.Query {
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV"},
-		//Component:      []string{"Networking", "Etcd", "Management Console"},
-		IncludeFields: []string{"id", "summary", "status", "severity", "target_release", "component", "sub_components", "keywords"},
+		IncludeFields:  []string{"id", "summary", "status", "severity", "target_release", "component", "sub_components", "keywords"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",
