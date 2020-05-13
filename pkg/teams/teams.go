@@ -15,6 +15,9 @@ import (
 const (
 	githubKeyFlagName   = "github-key"
 	githubKeyFlagDefVal = "githubKey"
+
+	teamDataFlagName   = "test-team-data"
+	teamDataFlagDefVal = ""
 )
 
 func (teams Teams) GetTeam(componentToFind string) string {
@@ -30,6 +33,17 @@ func (teams Teams) GetTeam(componentToFind string) string {
 
 func GetTeamData(cmd *cobra.Command) (Teams, error) {
 	teams := Teams{}
+	if path, err := cmd.Flags().GetString(teamDataFlagName); err != nil {
+		return teams, err
+	} else if path != "" {
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return teams, err
+		}
+		err = yaml.Unmarshal(data, &teams)
+		return teams, err
+	}
+
 	keyFile, err := cmd.Flags().GetString("github-key")
 	dat, err := ioutil.ReadFile(keyFile)
 	if err != nil {
@@ -62,4 +76,5 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 
 func AddFlags(cmd *cobra.Command) {
 	cmd.Flags().String(githubKeyFlagName, githubKeyFlagDefVal, "Path to file containing github key")
+	cmd.Flags().String(teamDataFlagName, teamDataFlagDefVal, "Path to file containing team data")
 }
