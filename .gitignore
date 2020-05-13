@@ -1,8 +1,8 @@
 react-material
-get-all-bugs
-bug-test
-stats
-bugs-per-team
+/get-all-bugs
+/bug-test
+/stats
+/bugs-per-team
 
 githubKey
 testTeamData.yml
