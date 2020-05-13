@@ -59,6 +59,39 @@ func (b BugMap) CountNotLowSeverity(team string) int {
 	return b.CountAll(team) - b.CountLowSeverity(team)
 }
 
+func (b BugMap) CountTargetRelease(team string, targets []string) int {
+	count := 0
+	for _, bug := range b[team] {
+		targetRelease := bug.TargetRelease
+		for _, target := range targets {
+			if targetRelease[0] == target {
+				count += 1
+				break
+			}
+		}
+	}
+	return count
+}
+
+func (b BugMap) CountBlocker(team string, targets []string) int {
+	count := 0
+	for _, bug := range b[team] {
+		targetRelease := bug.TargetRelease
+		severity := bug.Severity
+
+		if severity == "low" {
+			continue
+		}
+		for _, target := range targets {
+			if targetRelease[0] == target {
+				count += 1
+				break
+			}
+		}
+	}
+	return count
+}
+
 type BugData struct {
 	sync.RWMutex
 	bugs   []*bugzilla.Bug
