@@ -10,7 +10,7 @@ build:
 	$(MAKE) -j2 multi-build
 
 run-go: build-go
-	./main
+	./react-material
 
 run-node:
 	$(MAKE) -C react-material-ui run

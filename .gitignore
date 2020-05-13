@@ -1,9 +1,11 @@
 react-material
 get-all-bugs
 bug-test
+stats
+bugs-per-team
 
 githubKey
-shiftzilla_cfg.yaml
+testTeamData.yml
 
 bugzillaKey
 get-all-bugs
