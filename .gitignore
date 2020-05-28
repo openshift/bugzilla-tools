@@ -4,11 +4,12 @@ react-material
 /bugs-per-team
 /get-all-bugs
 
-githubKey
-testTeamData.yml
+/githubKey
+/testTeamData.yml
+/data/
 
-bugzillaKey
-testBugData
+/bugzillaKey
+/testBugData
 
 # Created by https://www.gitignore.io/api/go,react
 # Edit at https://www.gitignore.io/?templates=go,react
