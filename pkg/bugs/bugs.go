@@ -2,6 +2,7 @@ package bugs
 
 import (
 	"io/ioutil"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -24,6 +25,15 @@ const (
 )
 
 type BugMap map[string][]*bugzilla.Bug
+
+func (b BugMap) Teams() []string {
+	out := []string{}
+	for team := range b {
+		out = append(out, team)
+	}
+	sort.Strings(out)
+	return out
+}
 
 func (b BugMap) FilterByTargetRelease(sTargets []string) BugMap {
 	targets := sets.NewString(sTargets...)
@@ -241,7 +251,7 @@ func buildTeamMap(bugs []*bugzilla.Bug, teams teams.Teams) (map[string][]*bugzil
 
 	for i := range bugs {
 		bug := bugs[i]
-		team := teams.GetTeam(bug.Component[0])
+		team := teams.GetTeam(bug)
 		out[team] = append(out[team], bug)
 	}
 

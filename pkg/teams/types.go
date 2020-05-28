@@ -3,11 +3,12 @@ package teams
 import ()
 
 type TeamInfo struct {
-	Name       string   `json:"name,omitempty"`
-	Lead       string   `json:"lead,omitempty"`
-	Managers   []string `json:"managers,omitempty"`
-	Group      string   `json:"group,omitempty"`
-	Components []string `json:"components,omitempty"`
+	Name          string              `json:"name,omitempty"`
+	Lead          string              `json:"lead,omitempty"`
+	Managers      []string            `json:"managers,omitempty"`
+	Group         string              `json:"group,omitempty"`
+	Components    []string            `json:"components,omitempty"`
+	Subcomponents map[string][]string `json:"subcomponents,omitempty"`
 }
 
 type Milestones struct {

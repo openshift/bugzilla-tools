@@ -26,9 +26,18 @@ func doMain(cmd *cobra.Command, _ []string) error {
 
 	// Get All OCP Bugs
 	bugs := bugData.GetBugMap()
-	// Filter by upcoming
-	bugs = bugs.FilterByTargetRelease([]string{"4.5.0", "---"})
-	bugs = bugs.FilterBySeverity([]string{"medium", "high", "urgent", "unspecified"})
+
+	targets, err := cmd.Flags().GetStringSlice("target-release")
+	if err != nil {
+		return err
+	}
+	bugs = bugs.FilterByTargetRelease(targets)
+
+	severities, err := cmd.Flags().GetStringSlice("severity")
+	if err != nil {
+		return err
+	}
+	bugs = bugs.FilterBySeverity(severities)
 	keys := make([]string, 0, len(bugs))
 	for k := range bugs {
 		keys = append(keys, k)
@@ -49,6 +58,8 @@ func main() {
 	}
 	bugs.AddFlags(cmd)
 	teams.AddFlags(cmd)
+	cmd.Flags().StringSlice("target-release", []string{"4.5.0", "---"}, "target release to filter by")
+	cmd.Flags().StringSlice("severity", []string{"medium", "high", "urgent", "unspecified"}, "severities to filter by")
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	cmd.Execute()
 }

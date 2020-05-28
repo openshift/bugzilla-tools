@@ -13,6 +13,7 @@ type bugMetrics struct {
 	all                     *prometheus.GaugeVec
 	upcomingSprint          *prometheus.GaugeVec
 	mediumAndHigherSeverity *prometheus.GaugeVec
+	blockerBugs             *prometheus.GaugeVec
 }
 
 func updateGauge(teamName string, countFunc func(string) int, gauge *prometheus.GaugeVec) {
@@ -24,10 +25,18 @@ func updateGauge(teamName string, countFunc func(string) int, gauge *prometheus.
 	gauge.With(label).Set(count)
 }
 
+func getBlockerTargetRelease() []string {
+	return []string{"---", "4.5.0"}
+}
+
 func updateGauges(teamName string, bugs bugs.BugMap, bugMetrics bugMetrics) {
 	updateGauge(teamName, bugs.CountAll, bugMetrics.all)
 	updateGauge(teamName, bugs.CountUpcomingSprint, bugMetrics.upcomingSprint)
 	updateGauge(teamName, bugs.CountNotLowSeverity, bugMetrics.mediumAndHigherSeverity)
+	countBlockers := func(string) int {
+		return bugs.CountBlocker(teamName, getBlockerTargetRelease())
+	}
+	updateGauge(teamName, countBlockers, bugMetrics.blockerBugs)
 }
 
 func updateCounts(teams teams.Teams, bugs bugs.BugMap, bugMetrics bugMetrics) {
@@ -60,6 +69,10 @@ func createGauges() bugMetrics {
 	name = "bugs_medium_and_higher_severity"
 	help = "Number of medium or higher severity bugs"
 	bugMetrics.mediumAndHigherSeverity = createGauge(name, help)
+
+	name = "blocker_bugs"
+	help = "Number of bugs blocking the upcoming y-stream release"
+	bugMetrics.blockerBugs = createGauge(name, help)
 	return bugMetrics
 }
 

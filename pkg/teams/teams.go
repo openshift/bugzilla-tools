@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"io/ioutil"
+	"sort"
 	"strings"
 
+	"github.com/eparis/bugzilla"
 	"github.com/ghodss/yaml"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
@@ -20,15 +22,51 @@ const (
 	teamDataFlagDefVal = ""
 )
 
-func (teams Teams) GetTeam(componentToFind string) string {
+func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string) bool {
+	foundComponent := false
+	for _, component := range team.Components {
+		if componentToFind == component {
+			foundComponent = true
+			break
+		}
+	}
+	if !foundComponent {
+		return false
+	}
+	subcomponents, ok := team.Subcomponents[componentToFind]
+	if !ok {
+		// Team has components, but no subcomponents, so all match
+		return true
+	}
+	for _, subcomponent := range subcomponents {
+		if subcomponentToFind == subcomponent {
+			// both the component and the subcomponent match
+			return true
+		}
+	}
+	// Nothing matches
+	return false
+}
+
+func (teams Teams) GetTeam(bug *bugzilla.Bug) string {
+	component := bug.Component[0]
+	subcomponent := ""
+	if subcomponents, ok := bug.SubComponent[component]; ok {
+		subcomponent = subcomponents[0]
+	}
+
 	for _, team := range teams.Teams {
-		for _, component := range team.Components {
-			if componentToFind == component {
-				return team.Name
-			}
+		if isForTeam(team, component, subcomponent) {
+			return team.Name
 		}
 	}
 	return "unknown"
+}
+
+func (t *Teams) sort() {
+	sort.Slice(t.Teams, func(i, j int) bool {
+		return t.Teams[i].Name < t.Teams[j].Name
+	})
 }
 
 func GetTeamData(cmd *cobra.Command) (Teams, error) {
@@ -41,6 +79,7 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 			return teams, err
 		}
 		err = yaml.Unmarshal(data, &teams)
+		teams.sort()
 		return teams, err
 	}
 
@@ -71,6 +110,7 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 	if err != nil {
 		return teams, err
 	}
+	teams.sort()
 	return teams, nil
 }
 
