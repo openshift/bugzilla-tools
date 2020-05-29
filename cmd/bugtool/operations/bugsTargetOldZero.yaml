@@ -1,0 +1,40 @@
+default: true
+description: Open bugs which target closed releases
+name: bugsTargetOldZero
+query:
+  advanced:
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Migration Tooling
+  - field: component
+    negate: true
+    op: equals
+    value: odo
+  classification:
+  - Red Hat
+  include_fields:
+  - id
+  product:
+  - OpenShift Container Platform
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+  target_release:
+  - 4.1.0
+  - 4.2.0
+  - 4.3.0
+  - 4.4.0
+update:
+  comment:
+    body: Unsetting the target release because this bug targets a .0 release which
+      has already shipped. For example it may target 4.2.0. Since 4.2.0 has already
+      shipped such bugs may instead wish to target a future 4.2.z.
+    is_private: true
+  target_release: '---'

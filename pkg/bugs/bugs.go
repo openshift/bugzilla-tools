@@ -15,7 +15,7 @@ import (
 
 const (
 	UpcomingSprint   = "UpcomingSprint"
-	apiKeyFlagName   = "bugzilla-key"
+	APIKeyFlagName   = "bugzilla-key"
 	apiKeyFlagDefVal = "bugzillaKey"
 	apiKeyFlagUsage  = "Path to file containering BZ API key"
 
@@ -200,7 +200,7 @@ func (testClient) AddPullRequestAsExternalBug(_ int, _ string, _ string, _ int) 
 	return false, nil
 }
 
-func bugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
+func BugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 	if testPath, err := cmd.Flags().GetString(bugDataFlagName); err != nil {
 		return nil, err
 	} else if testPath != "" {
@@ -209,7 +209,7 @@ func bugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 
 	endpoint := "https://bugzilla.redhat.com"
 
-	keyFile, err := cmd.Flags().GetString(apiKeyFlagName)
+	keyFile, err := cmd.Flags().GetString(APIKeyFlagName)
 	dat, err := ioutil.ReadFile(keyFile)
 	if err != nil {
 		return nil, err
@@ -260,7 +260,7 @@ func buildTeamMap(bugs []*bugzilla.Bug, teams teams.Teams) (map[string][]*bugzil
 
 func getBugzillaAccess(cmd *cobra.Command) (bugzilla.Client, bugzilla.Query, error) {
 	query := bugzilla.Query{}
-	client, err := bugzillaClient(cmd)
+	client, err := BugzillaClient(cmd)
 	if err != nil {
 		return client, query, err
 	}
@@ -299,5 +299,5 @@ func BugDataReconciler(errs chan error, cmd *cobra.Command, teams teams.Teams, b
 
 func AddFlags(cmd *cobra.Command) {
 	cmd.Flags().String(bugDataFlagName, bugDataFlagDefVal, bugDataFlagUsage)
-	cmd.Flags().String(apiKeyFlagName, apiKeyFlagDefVal, apiKeyFlagUsage)
+	cmd.Flags().String(APIKeyFlagName, apiKeyFlagDefVal, apiKeyFlagUsage)
 }

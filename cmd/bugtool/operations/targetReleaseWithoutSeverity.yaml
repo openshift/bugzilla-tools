@@ -1,0 +1,34 @@
+default: true
+description: Bugs Setting Target Release Without Severity Set
+name: targetReleaseWithoutSeverity
+query:
+  advanced:
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: target_release
+    negate: true
+    op: equals
+    value: '---'
+  classification:
+  - Red Hat
+  include_fields:
+  - id
+  product:
+  - OpenShift Container Platform
+  severity:
+  - unspecified
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+update:
+  comment:
+    body: This bug has set a target release without specifying a severity. As part
+      of triage when determining the importance of bugs a severity should be specified.
+      Since these bugs have not been properly triaged we are removing the target release.
+      Teams will need to add a severity before setting the target release again.
+    is_private: true
+  target_release: '---'

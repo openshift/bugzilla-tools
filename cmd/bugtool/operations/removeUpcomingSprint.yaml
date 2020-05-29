@@ -1,0 +1,29 @@
+default: false
+description: Remove UpcomingSprint from all bugs
+name: removeUpcomingSprint
+query:
+  advanced:
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  classification:
+  - Red Hat
+  include_fields:
+  - id
+  keywords:
+  - UpcomingSprint
+  keywords_type: allwords
+  product:
+  - OpenShift Container Platform
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+  - MODIFIED
+  - ON_QA
+update:
+  keywords:
+    remove:
+    - UpcomingSprint

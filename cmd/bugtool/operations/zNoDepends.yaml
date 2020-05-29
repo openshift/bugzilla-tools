@@ -1,0 +1,45 @@
+default: true
+description: Z-Stream Bugs With No Depends On
+name: zNoDepends
+query:
+  advanced:
+  - field: dependson
+    op: isempty
+  - field: target_release
+    op: regexp
+    value: ^4\.[0-9]+\.z$
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Release
+  classification:
+  - Red Hat
+  include_fields:
+  - status
+  - summary
+  - target_release
+  - id
+  - sub_components
+  keywords:
+  - Security
+  keywords_type: nowords
+  product:
+  - OpenShift Container Platform
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+update:
+  comment:
+    body: |-
+      This bug sets Target Release equal to a z-stream but has no bug in the 'Depends On' field. As such this is not a valid bug state and the target release is being unset.
+
+      Any bug targeting 4.1.z must have a bug targeting 4.2 in 'Depends On.'
+      Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in 'Depends On.'
+    is_private: true
+  target_release: '---'
