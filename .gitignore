@@ -3,6 +3,8 @@ react-material
 /stats
 /bugs-per-team
 /get-all-bugs
+/bugtool
+/smartsheets
 
 /githubKey
 /testTeamData.yml
@@ -10,6 +12,8 @@ react-material
 
 /bugzillaKey
 /testBugData
+
+/smartsheetKey
 
 # Created by https://www.gitignore.io/api/go,react
 # Edit at https://www.gitignore.io/?templates=go,react

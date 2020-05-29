@@ -13,6 +13,12 @@ build-get-all-bugs:
 build-bugs-per-team:
 	go build ./cmd/bugs-per-team
 
+build-bugtool:
+	go build ./cmd/bugtool
+
+build-smartsheet:
+	go build ./cmd/shartsheets
+
 build-go: build-stats build-get-all-bugs build-bugs-per-team
 	go build ./
 
