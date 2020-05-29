@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/eparis/bugtool/pkg/bugs"
+	"github.com/eparis/bugtool/pkg/teams"
 	"github.com/eparis/bugzilla"
-	"github.com/eparis/react-material/pkg/bugs"
-	"github.com/eparis/react-material/pkg/teams"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 )

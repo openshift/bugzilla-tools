@@ -11,7 +11,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
-	"github.com/eparis/react-material/pkg/api"
+	"github.com/eparis/bugtool/pkg/api"
 )
 
 func blockerSeverity() []string {

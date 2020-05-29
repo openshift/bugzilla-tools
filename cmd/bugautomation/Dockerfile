@@ -1,9 +1,9 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 RUN microdnf update -y && microdnf clean all
 
-COPY bugtool /bugtool
-RUN chmod +x /bugtool
+COPY bugautomation /bugautomation
+RUN chmod +x /bugautomation
 
 COPY operations/ operations/
 
-CMD /bugtool
+CMD /bugautomation

@@ -12,8 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/eparis/react-material/pkg/api"
-	"github.com/eparis/react-material/pkg/bugs"
+	"github.com/eparis/bugtool/pkg/api"
+	"github.com/eparis/bugtool/pkg/bugs"
 )
 
 func getBugActions() ([]api.BugAction, error) {

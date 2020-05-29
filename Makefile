@@ -25,13 +25,13 @@ build-go: build-stats build-get-all-bugs build-bugs-per-team
 multi-build: build-go build-node
 
 run-go: build-go
-	./react-material --test-team-data=testTeamData.yml
+	./bugtool --test-team-data=testTeamData.yml
 
 run-node:
 	$(MAKE) -C react-material-ui run
 
 run-prometheus:
-	podman run --network=host -v ./data:/prometheus:Z -v ./prometheus.yml:/etc/prometheus/prometheus.yml:Z quay.io/prometheus/prometheus
+	podman run --network=host -v ./data:/prometheus:z -v ./prometheus.yml:/etc/prometheus/prometheus.yml:z quay.io/prometheus/prometheus
 
 run-bugs-per-team: build-bugs-per-team
 	./bugs-per-team --test-team-data=testTeamData.yml

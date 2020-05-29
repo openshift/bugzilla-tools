@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/eparis/bugtool/pkg/teams"
 	"github.com/eparis/bugzilla"
-	"github.com/eparis/react-material/pkg/teams"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 )

@@ -4,10 +4,10 @@ build:
 	go build ./
 
 run: build
-	./bugtool
+	./bugautomation
 
 container: build
-	podman build -t quay.io/${USER}/bugtool:latest .
+	podman build -t quay.io/${USER}/bugautomation:latest .
 
 container-run: container
-	podman run -ti -v ./apikey:/apikey:z quay.io/${USER}/bugtool:latest
+	podman run -ti -v ./bugzillaKey:/bugzillaKey:z quay.io/${USER}/bugautomation:latest
