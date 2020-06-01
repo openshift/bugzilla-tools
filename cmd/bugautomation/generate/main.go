@@ -97,6 +97,7 @@ func bugsWithUpcomingSprintUpdate() bugzilla.BugUpdate {
 		Keywords: &bugzilla.BugKeywords{
 			Remove: []string{"UpcomingSprint"},
 		},
+		MinorUpdate: true,
 	}
 }
 

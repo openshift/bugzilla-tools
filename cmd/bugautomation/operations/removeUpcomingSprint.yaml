@@ -27,3 +27,4 @@ update:
   keywords:
     remove:
     - UpcomingSprint
+  minor_update: true
