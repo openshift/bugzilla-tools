@@ -4,8 +4,8 @@ build:
 build-node:
 	$(MAKE) -C react-material-ui build
 
-build-stats:
-	go build ./cmd/stats
+build-upcoming-sprint-stats:
+	go build ./cmd/upcoming-sprint-stats
 
 build-get-all-bugs:
 	go build ./cmd/get-all-bugs
@@ -19,7 +19,7 @@ build-bugtool:
 build-smartsheet:
 	go build ./cmd/shartsheets
 
-build-go: build-stats build-get-all-bugs build-bugs-per-team
+build-go: build-upcoming-sprint-stats build-get-all-bugs build-bugs-per-team
 	go build ./
 
 multi-build: build-go build-node
