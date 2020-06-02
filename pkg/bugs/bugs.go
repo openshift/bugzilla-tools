@@ -17,7 +17,7 @@ const (
 	UpcomingSprint   = "UpcomingSprint"
 	APIKeyFlagName   = "bugzilla-key"
 	apiKeyFlagDefVal = "bugzillaKey"
-	apiKeyFlagUsage  = "Path to file containering BZ API key"
+	apiKeyFlagUsage  = "Path to file containing BZ API key"
 
 	bugDataFlagName   = "test-bug-data"
 	bugDataFlagDefVal = ""

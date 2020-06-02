@@ -21,7 +21,7 @@ const (
 
 	ssAPIKeyFlagName   = "smartsheet-key"
 	ssAPIKeyFlagDefVal = "smartsheetKey"
-	ssAPIKeyFlagUsage  = "Path to file containering SmartSheet API key"
+	ssAPIKeyFlagUsage  = "Path to file containing SmartSheet API key"
 
 	url = "https://api.smartsheet.com/2.0"
 	//sheetID   = "6386356843767684" // production sheet
