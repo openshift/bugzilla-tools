@@ -1,0 +1,33 @@
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: bugautomation
+  namespace: ocp-eng-architects
+spec:
+  schedule: '@hourly'
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: bugautomation
+        spec:
+          volumes:
+            - name: bugzilla-api-key
+              secret:
+                secretName: bugzilla-api-key
+                defaultMode: 420
+          containers:
+            - name: bugautomation
+              image: 'quay.io/eparis/bugautomation:latest'
+              resources: {}
+              volumeMounts:
+                - name: bugzilla-api-key
+                  readOnly: true
+                  mountPath: /etc/bugzilla
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

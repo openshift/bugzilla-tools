@@ -6,4 +6,4 @@ RUN chmod +x /bugautomation
 
 COPY operations/ operations/
 
-CMD /bugautomation
+CMD /bugautomation --bugzilla-key=/etc/bugzilla/bugzillaKey

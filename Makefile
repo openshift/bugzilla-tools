@@ -37,7 +37,7 @@ run-bugs-per-team: build-bugs-per-team
 
 run: build-node run-go
 
-appy-config:
+apply-config:
 	oc create secret generic bugzilla-api-key --from-file=bugzillaKey --dry-run=client -o yaml | oc apply -f -
 	oc create secret generic github-api-key --from-file=githubKey --dry-run=client -o yaml | oc apply -f -
 	oc create configmap prometheus-config --from-file=prometheus.yml --dry-run=client -o yaml | oc apply -f -
