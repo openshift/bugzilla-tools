@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bugtool
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: web
+  selector:
+    app: bugtool
+  type: ClusterIP
