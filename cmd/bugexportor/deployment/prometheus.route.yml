@@ -1,0 +1,11 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: prometheus
+spec:
+  to:
+    kind: Service
+    name: prometheus
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
