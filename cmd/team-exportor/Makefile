@@ -11,6 +11,7 @@ apply-config: container-push
 	oc create configmap overwrite-team-data --from-file=overwriteTeamData.yml  --dry-run=client -o yaml | oc apply -f -
 	oc apply -f deployment/$(NAME).deployment.yml
 	oc apply -f deployment/$(NAME).service.yml
+	oc delete pod -l app=$(NAME)
 
 container: build
 	podman build -t quay.io/$(USER)/$(NAME):latest .
