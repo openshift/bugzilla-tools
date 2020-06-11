@@ -1,20 +1,6 @@
-/get-all-bugs
-/upcoming-sprint-stats
-/bugs-per-team
-/get-all-bugs
-/bugtool
-/smartsheets
-/bugautomation
-
-/githubKey
-/testTeamData.yml
-/overwriteTestTeamData.yml
-/data/
-
-/bugzillaKey
-/testBugData
-
-/smartsheetKey
+/keys
+/data
+/testData
 
 # Created by https://www.gitignore.io/api/go,react
 # Edit at https://www.gitignore.io/?templates=go,react
