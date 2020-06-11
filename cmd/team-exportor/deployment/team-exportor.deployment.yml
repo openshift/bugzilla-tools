@@ -24,7 +24,7 @@ spec:
           name: github-api-key
           readOnly: true
         - mountPath: /var/run/
-          name: team-config
+          name: team-overwrite
           readOnly: true
         ports:
         - name: web
@@ -38,5 +38,5 @@ spec:
           secretName: github-api-key
       - configMap:
           defaultMode: 420
-          name: test-team-data
-        name: team-config
+          name: overwrite-team-data
+        name: team-overwrite

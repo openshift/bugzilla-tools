@@ -4,10 +4,11 @@ build:
 	go build ./
 
 run: build
-	./$(NAME) --test-team-data=overwriteTestTeamData.yml
+	./$(NAME) --overwrite-team-data=overwriteTeamData.yml
 
-apply-config:
+apply-config: container-push
 	oc create secret generic github-api-key --from-file=githubKey --dry-run=client -o yaml | oc apply -f -
+	oc create configmap overwrite-team-data --from-file=overwriteTeamData.yml  --dry-run=client -o yaml | oc apply -f -
 	oc apply -f deployment/$(NAME).deployment.yml
 	oc apply -f deployment/$(NAME).service.yml
 
@@ -18,6 +19,7 @@ container-push: container
 	podman push quay.io/$(USER)/$(NAME):latest
 
 container-run: container
-	podman run -ti -v ./bugzillaKey:/etc/bugzilla/bugzillaKey:z quay.io/${USER}/$(NAME):latest
+	podman run -ti -v ./overwriteTeamData.yml:/var/run/overwriteTeamData.yml:z -v ./githubKey:/etc/github/githubKey:z quay.io/${USER}/$(NAME):latest
+
 clean:
 	rm ./$(NAME)

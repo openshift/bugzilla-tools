@@ -23,6 +23,9 @@ const (
 
 	teamDataFlagName   = "test-team-data"
 	teamDataFlagDefVal = ""
+
+	teamOverwriteFlagName   = "overwrite-team-data"
+	teamOverwriteFlagDefVal = ""
 )
 
 func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string) bool {
@@ -91,7 +94,7 @@ func teamDataToOrgData(teamData Teams) (*OrgData, error) {
 	return orgData, nil
 }
 
-func getOrgDataFromUrl(cmd *cobra.Command) (*OrgData, error) {
+func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	keyFile, err := cmd.Flags().GetString("github-key")
 	if err != nil {
 		return nil, err
@@ -135,8 +138,8 @@ var (
 	notSetError = fmt.Errorf("Not set")
 )
 
-func getOrgDataFromFile(cmd *cobra.Command) (*OrgData, error) {
-	path, err := cmd.Flags().GetString(teamDataFlagName)
+func getOrgDataFromFile(cmd *cobra.Command, whichFlag string) (*OrgData, error) {
+	path, err := cmd.Flags().GetString(whichFlag)
 	if err != nil {
 		return nil, err
 	}
@@ -160,16 +163,25 @@ func getOrgDataFromFile(cmd *cobra.Command) (*OrgData, error) {
 }
 
 func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
-	orgData, err := getOrgDataFromUrl(cmd)
-	if err != nil {
+	orgData, err := getOrgDataFromFile(cmd, teamDataFlagName)
+	if err != nil && err != notSetError {
+		// bail if we got a real error
 		return nil, err
+	} else if err == notSetError {
+		// if the error was that the flag wasn't set pull from github
+		orgData, err = getOrgDataFromGithub(cmd)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	overrideOrgData, err := getOrgDataFromFile(cmd)
+	// get the overwrite data
+	overrideOrgData, err := getOrgDataFromFile(cmd, teamOverwriteFlagName)
 	if err != nil && err != notSetError {
 		return nil, err
 	}
 
+	// merge overwrite with the main data
 	if err = mergo.MergeWithOverwrite(orgData, overrideOrgData); err != nil {
 		return nil, err
 	}
@@ -227,4 +239,5 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 func AddFlags(cmd *cobra.Command) {
 	cmd.Flags().String(githubKeyFlagName, githubKeyFlagDefVal, "Path to file containing github key")
 	cmd.Flags().String(teamDataFlagName, teamDataFlagDefVal, "Path to file containing team data")
+	cmd.Flags().String(teamOverwriteFlagName, teamOverwriteFlagDefVal, "Path to file containing team data to overwrite with github/file data")
 }
