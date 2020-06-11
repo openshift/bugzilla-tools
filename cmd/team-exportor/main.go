@@ -21,11 +21,10 @@ const (
 
 func GetTeamHandler(orgData *teams.OrgData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		teams := orgData.Teams
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		err := json.NewEncoder(w).Encode(teams)
+		err := json.NewEncoder(w).Encode(orgData)
 		if err != nil {
-			fmt.Errorf("Unable to encode: %v: %v", teams, err)
+			fmt.Errorf("Unable to encode: %v: %v", orgData, err)
 		}
 	}
 }
@@ -55,7 +54,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	orgData.Reconcile()
+	orgData.Reconciler()
 
 	serveHTTP(errs, orgData)
 

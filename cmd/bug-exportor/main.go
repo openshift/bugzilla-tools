@@ -54,13 +54,16 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	orgData, err := teams.GetOrgData(cmd)
-	teams, err := teams.GetTeamData(cmd)
 	if err != nil {
 		return err
 	}
+	orgData.Reconciler()
 
-	bugData := &bugs.BugData{}
-	bugs.BugDataReconciler(errs, cmd, teams, bugData)
+	bugData, err := bugs.GetBugData(cmd, orgData, errs)
+	if err != nil {
+		return err
+	}
+	bugData.Reconciler()
 
 	serveHTTP(errs, bugData)
 
@@ -71,7 +74,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		fmt.Println("Sutting down...")
 		return nil
 	case err := <-errs:
-		fmt.Println("Failed to start server:", err.Error())
+		fmt.Println("Server error:", err.Error())
 		return err
 	}
 }

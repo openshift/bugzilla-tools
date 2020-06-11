@@ -23,12 +23,6 @@ spec:
         - mountPath: /etc/bugzilla
           name: bugzilla-api-key
           readOnly: true
-        - mountPath: /etc/github/
-          name: github-api-key
-          readOnly: true
-        - mountPath: /var/run/
-          name: team-config
-          readOnly: true
         ports:
         - name: web
           containerPort: 8000
@@ -39,11 +33,3 @@ spec:
         secret:
           defaultMode: 420
           secretName: bugzilla-api-key
-      - name: github-api-key
-        secret:
-          defaultMode: 420
-          secretName: github-api-key
-      - configMap:
-          defaultMode: 420
-          name: test-team-data
-        name: team-config

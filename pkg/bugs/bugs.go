@@ -141,8 +141,13 @@ func (b BugMap) CountBlocker(team string, targets []string) int {
 
 type BugData struct {
 	sync.RWMutex
-	bugs   []*bugzilla.Bug
-	bugMap BugMap
+	bugs    []*bugzilla.Bug
+	bugMap  BugMap
+	cmd     *cobra.Command
+	errs    chan error
+	client  bugzilla.Client
+	query   bugzilla.Query
+	orgData *teams.OrgData
 }
 
 func (bd *BugData) GetBugs() []*bugzilla.Bug {
@@ -164,12 +169,12 @@ func (bd *BugData) set(bugs []*bugzilla.Bug, bugMap map[string][]*bugzilla.Bug) 
 	bd.bugMap = BugMap(bugMap)
 }
 
-func (bd *BugData) reconcile(client bugzilla.Client, query bugzilla.Query, teams teams.Teams) error {
-	bugs, err := client.Search(query)
+func (bd *BugData) reconcile() error {
+	bugs, err := bd.client.Search(bd.query)
 	if err != nil {
 		return err
 	}
-	bugMap, err := buildTeamMap(bugs, teams)
+	bugMap, err := buildTeamMap(bugs, bd.orgData)
 	if err != nil {
 		return err
 	}
@@ -225,11 +230,11 @@ func BugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 	return bugzilla.NewClient(*generator, endpoint), nil
 }
 
-func getNotUpcomingSprintQuery() bugzilla.Query {
+func getAllOpenBugsQuery() bugzilla.Query {
 	return bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
-		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV"},
+		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
 		IncludeFields:  []string{"id", "summary", "status", "severity", "target_release", "component", "sub_components", "keywords"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
@@ -242,16 +247,16 @@ func getNotUpcomingSprintQuery() bugzilla.Query {
 	}
 }
 
-func buildTeamMap(bugs []*bugzilla.Bug, teams teams.Teams) (map[string][]*bugzilla.Bug, error) {
+func buildTeamMap(bugs []*bugzilla.Bug, orgData *teams.OrgData) (map[string][]*bugzilla.Bug, error) {
 	out := map[string][]*bugzilla.Bug{}
-	for _, team := range teams.Teams {
+	for _, team := range orgData.Teams {
 		out[team.Name] = []*bugzilla.Bug{}
 	}
 	out["unknown"] = []*bugzilla.Bug{}
 
 	for i := range bugs {
 		bug := bugs[i]
-		team := teams.GetTeam(bug)
+		team := orgData.GetTeam(bug)
 		out[team] = append(out[team], bug)
 	}
 
@@ -264,37 +269,39 @@ func getBugzillaAccess(cmd *cobra.Command) (bugzilla.Client, bugzilla.Query, err
 	if err != nil {
 		return client, query, err
 	}
-	query = getNotUpcomingSprintQuery()
+	query = getAllOpenBugsQuery()
 	return client, query, nil
 }
 
-func ReconcileBugData(cmd *cobra.Command, teams teams.Teams, bugData *BugData) error {
-	client, query, err := getBugzillaAccess(cmd)
-	if err != nil {
-		return err
-	}
-	err = bugData.reconcile(client, query, teams)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func BugDataReconciler(errs chan error, cmd *cobra.Command, teams teams.Teams, bugData *BugData) {
-	client, query, err := getBugzillaAccess(cmd)
-	if err != nil {
-		errs <- err
-		return
-	}
+func (bd *BugData) Reconciler() {
 	go func() {
 		for true {
-			if err := bugData.reconcile(client, query, teams); err != nil {
-				errs <- err
+			if err := bd.reconcile(); err != nil {
+				bd.errs <- err
 				return
 			}
 			time.Sleep(time.Minute * 5)
 		}
 	}()
+}
+
+func GetBugData(cmd *cobra.Command, orgData *teams.OrgData, errs chan error) (*BugData, error) {
+	client, query, err := getBugzillaAccess(cmd)
+	if err != nil {
+		return nil, err
+	}
+	bugData := &BugData{
+		cmd:     cmd,
+		errs:    errs,
+		client:  client,
+		query:   query,
+		orgData: orgData,
+	}
+	err = bugData.reconcile()
+	if err != nil {
+		return nil, err
+	}
+	return bugData, nil
 }
 
 func AddFlags(cmd *cobra.Command) {

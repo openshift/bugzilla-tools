@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 
@@ -60,25 +59,19 @@ func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string)
 	return false
 }
 
-func (teams Teams) GetTeam(bug *bugzilla.Bug) string {
+func (orgData OrgData) GetTeam(bug *bugzilla.Bug) string {
 	component := bug.Component[0]
 	subcomponent := ""
 	if subcomponents, ok := bug.SubComponent[component]; ok {
 		subcomponent = subcomponents[0]
 	}
 
-	for _, team := range teams.Teams {
+	for _, team := range orgData.Teams {
 		if isForTeam(team, component, subcomponent) {
 			return team.Name
 		}
 	}
 	return "unknown"
-}
-
-func (t *Teams) sort() {
-	sort.Slice(t.Teams, func(i, j int) bool {
-		return t.Teams[i].Name < t.Teams[j].Name
-	})
 }
 
 // mainly move from the list of teams and releases to a map[name]team or map[name]release
@@ -185,11 +178,11 @@ func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	overrideOrgData, err := getOrgDataFromFile(cmd, teamOverwriteFlagName)
 	if err != nil && err != notSetError {
 		return nil, err
-	}
-
-	// merge overwrite with the main data
-	if err = mergo.MergeWithOverwrite(orgData, overrideOrgData); err != nil {
-		return nil, err
+	} else if err == nil {
+		// merge overwrite with the main data
+		if err = mergo.MergeWithOverwrite(orgData, overrideOrgData); err != nil {
+			return nil, err
+		}
 	}
 	orgData.cmd = cmd
 	orgData.reconcileBy = reconcileFiles
@@ -245,72 +238,26 @@ func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 
 }
 
-func (orgData *OrgData) Reconcile() {
+func (orgData *OrgData) Reconciler() {
 	go func() {
-		newOrgData := &OrgData{}
-		var err error
-		switch orgData.reconcileBy {
-		case reconcileService:
-			newOrgData, err = getOrgDataFromService(orgData.cmd)
-		case reconcileFiles:
-			newOrgData, err = getOrgDataFromGithub(orgData.cmd)
-		default:
-			log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
+		for true {
+			newOrgData := &OrgData{}
+			var err error
+			switch orgData.reconcileBy {
+			case reconcileService:
+				newOrgData, err = getOrgDataFromService(orgData.cmd)
+			case reconcileFiles:
+				newOrgData, err = getOrgDataFromGithub(orgData.cmd)
+			default:
+				log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
+			}
+			if err != nil {
+				log.Fatalln(err)
+			}
+			*orgData = *newOrgData
+			time.Sleep(time.Minute * 5)
 		}
-		if err != nil {
-			log.Fatalln(err)
-		}
-		*orgData = *newOrgData
-		time.Sleep(time.Minute * 5)
 	}()
-}
-
-func GetTeamData(cmd *cobra.Command) (Teams, error) {
-	teams := Teams{}
-	if path, err := cmd.Flags().GetString(teamDataFlagName); err != nil {
-		return teams, err
-	} else if path != "" {
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			return teams, err
-		}
-		err = yaml.Unmarshal(data, &teams)
-		teams.sort()
-		return teams, err
-	}
-
-	keyFile, err := cmd.Flags().GetString("github-key")
-	if err != nil {
-		return teams, err
-	}
-	dat, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return teams, err
-	}
-	apikey := strings.TrimRight(string(dat), "\r\n")
-
-	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: apikey},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-	file, _, _, err := client.Repositories.GetContents(ctx, "openshift", "li", "tools/shiftzilla/shiftzilla_cfg.yaml", nil)
-	if err != nil {
-		return teams, err
-	}
-	encoded := *file.Content
-	contents, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return teams, err
-	}
-
-	err = yaml.Unmarshal(contents, &teams)
-	if err != nil {
-		return teams, err
-	}
-	teams.sort()
-	return teams, nil
 }
 
 func AddFlags(cmd *cobra.Command) {

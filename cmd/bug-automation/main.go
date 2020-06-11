@@ -69,7 +69,6 @@ func doBug(cmd *cobra.Command) error {
 		return err
 	}
 	selectedActions := actionNames(actionSlice)
-	logrus.Infof("Running: %v", selectedActions)
 
 	potentialActions, err := getBugActions()
 	if err != nil {
@@ -88,6 +87,7 @@ func doBug(cmd *cobra.Command) error {
 			continue
 		}
 	}
+	logrus.Infof("Running: %v", actions)
 	for _, action := range actions {
 		query := action.Query
 		bugs, err := client.Search(query)
