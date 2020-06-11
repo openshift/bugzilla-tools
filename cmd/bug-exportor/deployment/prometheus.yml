@@ -3,4 +3,4 @@ scrape_configs:
   scrape_interval: 10s
   static_configs:
   - targets:
-    - bugexportor:8000
+    - bug-exportor:8000

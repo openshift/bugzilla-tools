@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: bugexportor
-  name: bugexportor
+    app: bug-exportor
+  name: bug-exportor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: bugexportor
+      app: bug-exportor
   template:
     metadata:
       labels:
-        app: bugexportor
+        app: bug-exportor
     spec:
       containers:
-      - image: quay.io/eparis/bugexportor:latest
+      - image: quay.io/eparis/bug-exportor:latest
         imagePullPolicy: Always
-        name: bugexportor
+        name: bug-exportor
         resources: {}
         volumeMounts:
         - mountPath: /etc/bugzilla

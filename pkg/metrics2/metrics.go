@@ -6,24 +6,43 @@ import (
 	"time"
 
 	"github.com/eparis/bugtool/pkg/bugs"
+	"github.com/eparis/bugzilla"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
+var (
+	lastGauges = map[int]prometheus.Labels{}
+)
+
+func labelsFromBug(bug *bugzilla.Bug, team string) prometheus.Labels {
+	return prometheus.Labels{
+		"team":           team,
+		"id":             fmt.Sprintf("%d", bug.ID),
+		"status":         bug.Status,
+		"severity":       bug.Severity,
+		"keywords":       strings.Join(bug.Keywords, ","),
+		"target_release": bug.TargetRelease[0],
+	}
+}
+
 func updateGauge(bugs bugs.BugMap, bugGauge *prometheus.GaugeVec) {
+	nextGauges := map[int]prometheus.Labels{}
 	for team, bugs := range bugs {
 		for _, bug := range bugs {
-			label := prometheus.Labels{
-				"team":           team,
-				"id":             fmt.Sprintf("%d", bug.ID),
-				"status":         bug.Status,
-				"severity":       bug.Severity,
-				"keywords":       strings.Join(bug.Keywords, ","),
-				"target_release": bug.TargetRelease[0],
+			labels := labelsFromBug(bug, team)
+			nextGauges[bug.ID] = labels
+			if lastLabels, ok := lastGauges[bug.ID]; ok {
+				delete(lastGauges, bug.ID)
+				bugGauge.Delete(lastLabels)
 			}
-			bugGauge.With(label).Set(1)
+			bugGauge.With(labels).Set(1)
 		}
 	}
+	for _, labels := range lastGauges {
+		bugGauge.Delete(labels)
+	}
+	lastGauges = nextGauges
 }
 
 func createGauge() *prometheus.GaugeVec {
