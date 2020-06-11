@@ -23,9 +23,9 @@ const (
 	ssAPIKeyFlagDefVal = "smartsheetKey"
 	ssAPIKeyFlagUsage  = "Path to file containing SmartSheet API key"
 
-	url = "https://api.smartsheet.com/2.0"
-	//sheetID   = "6386356843767684" // production sheet
-	sheetID = "298546583889796" // eparis sheet
+	url     = "https://api.smartsheet.com/2.0"
+	sheetID = "6386356843767684" // production sheet
+	//sheetID = "298546583889796" // eparis sheet
 )
 
 var (
@@ -90,6 +90,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		}
 	}
 	newRows := []goSmartSheet.Row{}
+	teamOnSheet := map[string]bool{}
 	for _, row := range sheet.Rows {
 		for _, cell := range row.Cells {
 			if cell.ColumnID != teamNameColumn {
@@ -99,6 +100,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 				continue
 			}
 			teamName := cell.Value.StringVal
+			teamOnSheet[*teamName] = true
 			_, ok := bugMap[*teamName]
 			if !ok {
 				fmt.Printf("Unable to find bugs for: %s\n", *teamName)
@@ -113,6 +115,11 @@ func doMain(cmd *cobra.Command, _ []string) error {
 				Cells: newCells,
 			}
 			newRows = append(newRows, newRow)
+		}
+	}
+	for teamName := range bugMap {
+		if !teamOnSheet[teamName] {
+			fmt.Printf("Found bugs for %s but not on SoS sheet\n", teamName)
 		}
 	}
 	closer, err := client.UpdateRowsOnSheet(sheetID, newRows)

@@ -3,6 +3,7 @@ package teams
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -10,6 +11,8 @@ import (
 	"github.com/eparis/bugzilla"
 	"github.com/ghodss/yaml"
 	"github.com/google/go-github/github"
+	"github.com/imdario/mergo"
+	//"github.com/kr/pretty"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
@@ -69,6 +72,110 @@ func (t *Teams) sort() {
 	})
 }
 
+// mainly move from the list of teams and releases to a map[name]team or map[name]release
+func teamDataToOrgData(teamData Teams) (*OrgData, error) {
+	orgData := &OrgData{}
+	orgData.OrgTitle = teamData.OrgTitle
+	orgData.Teams = map[string]TeamInfo{}
+	for i := range teamData.Teams {
+		teamInfo := teamData.Teams[i]
+		name := teamInfo.Name
+		orgData.Teams[name] = teamInfo
+	}
+	orgData.Releases = map[string]ReleaseInfo{}
+	for i := range teamData.Releases {
+		releaseInfo := teamData.Releases[i]
+		name := releaseInfo.Name
+		orgData.Releases[name] = releaseInfo
+	}
+	return orgData, nil
+}
+
+func getOrgDataFromUrl(cmd *cobra.Command) (*OrgData, error) {
+	keyFile, err := cmd.Flags().GetString("github-key")
+	if err != nil {
+		return nil, err
+	}
+	dat, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		return nil, err
+	}
+	apikey := strings.TrimRight(string(dat), "\r\n")
+
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: apikey},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	file, _, _, err := client.Repositories.GetContents(ctx, "openshift", "li", "tools/shiftzilla/shiftzilla_cfg.yaml", nil)
+	if err != nil {
+		return nil, err
+	}
+	encoded := *file.Content
+	contents, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		return nil, err
+	}
+
+	teamData := Teams{}
+	err = yaml.Unmarshal(contents, &teamData)
+	if err != nil {
+		return nil, err
+	}
+
+	orgData, err := teamDataToOrgData(teamData)
+	if err != nil {
+		return nil, err
+	}
+	return orgData, nil
+}
+
+var (
+	notSetError = fmt.Errorf("Not set")
+)
+
+func getOrgDataFromFile(cmd *cobra.Command) (*OrgData, error) {
+	path, err := cmd.Flags().GetString(teamDataFlagName)
+	if err != nil {
+		return nil, err
+	}
+	if path == "" {
+		return nil, notSetError
+	}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	teamData := Teams{}
+	err = yaml.Unmarshal(data, &teamData)
+	if err != nil {
+		return nil, err
+	}
+	orgData, err := teamDataToOrgData(teamData)
+	if err != nil {
+		return nil, err
+	}
+	return orgData, nil
+}
+
+func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
+	orgData, err := getOrgDataFromUrl(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	overrideOrgData, err := getOrgDataFromFile(cmd)
+	if err != nil && err != notSetError {
+		return nil, err
+	}
+
+	if err = mergo.MergeWithOverwrite(orgData, overrideOrgData); err != nil {
+		return nil, err
+	}
+	return orgData, nil
+}
+
 func GetTeamData(cmd *cobra.Command) (Teams, error) {
 	teams := Teams{}
 	if path, err := cmd.Flags().GetString(teamDataFlagName); err != nil {
@@ -84,6 +191,9 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 	}
 
 	keyFile, err := cmd.Flags().GetString("github-key")
+	if err != nil {
+		return teams, err
+	}
 	dat, err := ioutil.ReadFile(keyFile)
 	if err != nil {
 		return teams, err

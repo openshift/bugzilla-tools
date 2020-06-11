@@ -19,13 +19,19 @@ type Milestones struct {
 }
 
 type ReleaseInfo struct {
-	Name       string     `json:"name,omitempty"`
-	Targets    []string   `json:"targets,omitempty"`
-	Milestones Milestones `json:"milestones,omitempty"`
+	Name       string      `json:"name,omitempty"`
+	Targets    []string    `json:"targets,omitempty"`
+	Milestones *Milestones `json:"milestones,omitempty"`
 }
 
 type Teams struct {
 	OrgTitle string        `json:"OrgTitle,omitempty"`
 	Teams    []TeamInfo    `json:"Teams,omitempty"`
 	Releases []ReleaseInfo `json:"Releases,omitempty"`
+}
+
+type OrgData struct {
+	OrgTitle string                 `json:"orgTitle,omitempty"`
+	Teams    map[string]TeamInfo    `json:"teams,omitempty"`
+	Releases map[string]ReleaseInfo `json:"releases,omitempty"`
 }
