@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/eparis/bugzilla"
 	"github.com/ghodss/yaml"
@@ -185,7 +187,19 @@ func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 	if err = mergo.MergeWithOverwrite(orgData, overrideOrgData); err != nil {
 		return nil, err
 	}
+	orgData.cmd = cmd
 	return orgData, nil
+}
+
+func (orgData *OrgData) Reconcile() {
+	go func() {
+		newOrgData, err := GetOrgData(orgData.cmd)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		*orgData = *newOrgData
+		time.Sleep(time.Minute * 5)
+	}()
 }
 
 func GetTeamData(cmd *cobra.Command) (Teams, error) {

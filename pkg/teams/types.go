@@ -1,6 +1,8 @@
 package teams
 
-import ()
+import (
+	"github.com/spf13/cobra"
+)
 
 type TeamInfo struct {
 	Name          string              `json:"name,omitempty"`
@@ -34,4 +36,5 @@ type OrgData struct {
 	OrgTitle string                 `json:"orgTitle,omitempty"`
 	Teams    map[string]TeamInfo    `json:"teams,omitempty"`
 	Releases map[string]ReleaseInfo `json:"releases,omitempty"`
+	cmd      *cobra.Command
 }

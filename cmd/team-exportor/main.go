@@ -55,6 +55,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
+	orgData.Reconcile()
 
 	serveHTTP(errs, orgData)
 
