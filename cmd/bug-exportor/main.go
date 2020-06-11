@@ -53,6 +53,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
+	orgData, err := teams.GetOrgData(cmd)
 	teams, err := teams.GetTeamData(cmd)
 	if err != nil {
 		return err

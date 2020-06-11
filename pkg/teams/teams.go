@@ -22,6 +22,8 @@ import (
 )
 
 const (
+	fromGithubFlagName = "data-from-github"
+
 	githubKeyFlagName   = "github-key"
 	githubKeyFlagDefVal = "githubKey"
 
@@ -98,7 +100,7 @@ func teamDataToOrgData(teamData Teams) (*OrgData, error) {
 	return orgData, nil
 }
 
-func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
+func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
 	keyFile, err := cmd.Flags().GetString("github-key")
 	if err != nil {
 		return nil, err
@@ -166,14 +168,14 @@ func getOrgDataFromFile(cmd *cobra.Command, whichFlag string) (*OrgData, error) 
 	return orgData, nil
 }
 
-func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
+func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	orgData, err := getOrgDataFromFile(cmd, teamDataFlagName)
 	if err != nil && err != notSetError {
 		// bail if we got a real error
 		return nil, err
 	} else if err == notSetError {
 		// if the error was that the flag wasn't set pull from github
-		orgData, err = getOrgDataFromGithub(cmd)
+		orgData, err = getOrgDataFromLi(cmd)
 		if err != nil {
 			return nil, err
 		}
@@ -194,27 +196,7 @@ func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 	return orgData, nil
 }
 
-func (orgData *OrgData) Reconcile() {
-	go func() {
-		newOrgData := &OrgData{}
-		var err error
-		switch orgData.reconcileBy {
-		case reconcileService:
-			newOrgData, err = GetOrgDataFromService(orgData.cmd)
-		case reconcileFiles:
-			newOrgData, err = GetOrgData(orgData.cmd)
-		default:
-			log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
-		}
-		if err != nil {
-			log.Fatalln(err)
-		}
-		*orgData = *newOrgData
-		time.Sleep(time.Minute * 5)
-	}()
-}
-
-func GetOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
+func getOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
 	url := "http://team-exportor/teams"
 
 	client := http.Client{
@@ -249,6 +231,38 @@ func GetOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
 	orgData.reconcileBy = reconcileService
 
 	return orgData, nil
+}
+
+func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
+	fromGithub, err := cmd.Flags().GetBool(fromGithubFlagName)
+	if err != nil {
+		return nil, err
+	}
+	if fromGithub {
+		return getOrgDataFromGithub(cmd)
+	}
+	return getOrgDataFromService(cmd)
+
+}
+
+func (orgData *OrgData) Reconcile() {
+	go func() {
+		newOrgData := &OrgData{}
+		var err error
+		switch orgData.reconcileBy {
+		case reconcileService:
+			newOrgData, err = getOrgDataFromService(orgData.cmd)
+		case reconcileFiles:
+			newOrgData, err = getOrgDataFromGithub(orgData.cmd)
+		default:
+			log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
+		}
+		if err != nil {
+			log.Fatalln(err)
+		}
+		*orgData = *newOrgData
+		time.Sleep(time.Minute * 5)
+	}()
 }
 
 func GetTeamData(cmd *cobra.Command) (Teams, error) {
@@ -300,6 +314,7 @@ func GetTeamData(cmd *cobra.Command) (Teams, error) {
 }
 
 func AddFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(fromGithubFlagName, false, "Use github and local files or use the microservice")
 	cmd.Flags().String(githubKeyFlagName, githubKeyFlagDefVal, "Path to file containing github key")
 	cmd.Flags().String(teamDataFlagName, teamDataFlagDefVal, "Path to file containing team data")
 	cmd.Flags().String(teamOverwriteFlagName, teamOverwriteFlagDefVal, "Path to file containing team data to overwrite with github/file data")
