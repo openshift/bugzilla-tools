@@ -3,9 +3,11 @@ package teams
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"sort"
 	"strings"
 	"time"
@@ -188,18 +190,65 @@ func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 		return nil, err
 	}
 	orgData.cmd = cmd
+	orgData.reconcileBy = reconcileFiles
 	return orgData, nil
 }
 
 func (orgData *OrgData) Reconcile() {
 	go func() {
-		newOrgData, err := GetOrgData(orgData.cmd)
+		newOrgData := &OrgData{}
+		var err error
+		switch orgData.reconcileBy {
+		case reconcileService:
+			newOrgData, err = GetOrgDataFromService(orgData.cmd)
+		case reconcileFiles:
+			newOrgData, err = GetOrgData(orgData.cmd)
+		default:
+			log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
+		}
 		if err != nil {
 			log.Fatalln(err)
 		}
 		*orgData = *newOrgData
 		time.Sleep(time.Minute * 5)
 	}()
+}
+
+func GetOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
+	url := "http://team-exportor/teams"
+
+	client := http.Client{
+		Timeout: time.Second * 2, // Maximum of 2 secs
+	}
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "github.com/eparis/bugtool/pkg/teams")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		return nil, err
+	}
+
+	orgData := &OrgData{}
+	jsonErr := json.Unmarshal(body, orgData)
+	if jsonErr != nil {
+		return nil, err
+	}
+	orgData.cmd = cmd
+	orgData.reconcileBy = reconcileService
+
+	return orgData, nil
 }
 
 func GetTeamData(cmd *cobra.Command) (Teams, error) {

@@ -4,6 +4,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	reconcileService = "service"
+	reconcileFiles   = "files"
+)
+
 type TeamInfo struct {
 	Name          string              `json:"name,omitempty"`
 	Lead          string              `json:"lead,omitempty"`
@@ -33,8 +38,9 @@ type Teams struct {
 }
 
 type OrgData struct {
-	OrgTitle string                 `json:"orgTitle,omitempty"`
-	Teams    map[string]TeamInfo    `json:"teams,omitempty"`
-	Releases map[string]ReleaseInfo `json:"releases,omitempty"`
-	cmd      *cobra.Command
+	OrgTitle    string                 `json:"orgTitle,omitempty"`
+	Teams       map[string]TeamInfo    `json:"teams,omitempty"`
+	Releases    map[string]ReleaseInfo `json:"releases,omitempty"`
+	cmd         *cobra.Command
+	reconcileBy string
 }
