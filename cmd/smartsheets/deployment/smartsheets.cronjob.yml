@@ -1,0 +1,40 @@
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: smartsheets
+  namespace: ocp-eng-architects
+spec:
+  schedule: '0 7 * * 1'
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: smartsheets
+        spec:
+          volumes:
+            - name: bugzilla-api-key
+              secret:
+                secretName: bugzilla-api-key
+                defaultMode: 420
+            - name: smartsheets-api-key
+              secret:
+                secretName: smartsheets-api-key
+                defaultMode: 420
+          containers:
+            - name: smartsheets
+              image: 'quay.io/eparis/smartsheets:latest'
+              resources: {}
+              volumeMounts:
+                - name: bugzilla-api-key
+                  readOnly: true
+                  mountPath: /etc/bugzilla
+                - name: smartsheets-api-key
+                  readOnly: true
+                  mountPath: /etc/smartsheets
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
