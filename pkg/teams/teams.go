@@ -185,7 +185,6 @@ func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 		}
 	}
 	orgData.cmd = cmd
-	orgData.reconcileBy = reconcileFiles
 	return orgData, nil
 }
 
@@ -221,36 +220,35 @@ func getOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
 		return nil, err
 	}
 	orgData.cmd = cmd
-	orgData.reconcileBy = reconcileService
 
 	return orgData, nil
 }
 
-func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
+func getOrgData(cmd *cobra.Command) (*OrgData, error) {
 	fromGithub, err := cmd.Flags().GetBool(fromGithubFlagName)
 	if err != nil {
 		return nil, err
 	}
+	var orgData *OrgData
 	if fromGithub {
-		return getOrgDataFromGithub(cmd)
+		orgData, err = getOrgDataFromGithub(cmd)
+	} else {
+		orgData, err = getOrgDataFromService(cmd)
 	}
-	return getOrgDataFromService(cmd)
+	if err == nil {
+		fmt.Printf("Successfully fetched OrgData len(teams):%d len(releases): %d\n", len(orgData.Teams), len(orgData.Releases))
+	}
+	return orgData, err
+}
 
+func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
+	return getOrgData(cmd)
 }
 
 func (orgData *OrgData) Reconciler() {
 	go func() {
 		for true {
-			newOrgData := &OrgData{}
-			var err error
-			switch orgData.reconcileBy {
-			case reconcileService:
-				newOrgData, err = getOrgDataFromService(orgData.cmd)
-			case reconcileFiles:
-				newOrgData, err = getOrgDataFromGithub(orgData.cmd)
-			default:
-				log.Fatalf("Unknown orgData.reconcileby: %s", orgData.reconcileBy)
-			}
+			newOrgData, err := getOrgData(orgData.cmd)
 			if err != nil {
 				log.Fatalln(err)
 			}

@@ -57,6 +57,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	orgData.Reconciler()
 
 	serveHTTP(errs, orgData)
+	fmt.Println("http server started.")
 
 	select {
 	case <-stop:

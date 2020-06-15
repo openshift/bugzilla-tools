@@ -38,9 +38,8 @@ type Teams struct {
 }
 
 type OrgData struct {
-	OrgTitle    string                 `json:"orgTitle,omitempty"`
-	Teams       map[string]TeamInfo    `json:"teams,omitempty"`
-	Releases    map[string]ReleaseInfo `json:"releases,omitempty"`
-	cmd         *cobra.Command
-	reconcileBy string
+	OrgTitle string                 `json:"orgTitle,omitempty"`
+	Teams    map[string]TeamInfo    `json:"teams,omitempty"`
+	Releases map[string]ReleaseInfo `json:"releases,omitempty"`
+	cmd      *cobra.Command
 }
