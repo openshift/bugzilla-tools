@@ -122,5 +122,7 @@ func main() {
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	cmd.Flags().StringSlice("actions", []string{}, "Actions to run, unset runs all actions with default=true")
 	bugs.AddFlags(cmd)
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

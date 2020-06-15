@@ -40,5 +40,7 @@ func main() {
 	bugs.AddFlags(cmd)
 	teams.AddFlags(cmd)
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

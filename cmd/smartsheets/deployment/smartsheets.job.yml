@@ -3,6 +3,9 @@ apiVersion: batch/v1
 metadata:
   name: smartsheets
   namespace: ocp-eng-architects
+  labels:
+    app: smartsheets
+    type: oneshot
 spec:
   template:
     metadata:

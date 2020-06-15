@@ -138,5 +138,7 @@ func main() {
 	teams.AddFlags(cmd)
 	bugs.AddFlags(cmd)
 	cmd.Flags().String(ssAPIKeyFlagName, ssAPIKeyFlagDefVal, ssAPIKeyFlagUsage)
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		os.Exit(1)
+	}
 }

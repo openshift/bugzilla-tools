@@ -1,6 +1,7 @@
 package bugs
 
 import (
+	"fmt"
 	"io/ioutil"
 	"sort"
 	"strings"
@@ -179,6 +180,7 @@ func (bd *BugData) reconcile() error {
 		return err
 	}
 	bd.set(bugs, bugMap)
+	fmt.Printf("Successfully reconciled GetBugData. Teams:%d BugCount:%d\n", len(bd.orgData.Teams), len(bd.GetBugs()))
 	return nil
 }
 

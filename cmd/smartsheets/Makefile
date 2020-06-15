@@ -11,6 +11,10 @@ apply-config: container-push
 	oc create secret generic smartsheets-api-key --from-file=smartsheetKey --dry-run=client -o yaml | oc apply -f -
 	oc apply -f deployment/$(NAME).cronjob.yml
 
+run-job: container-push
+	oc delete job -l app=$(NAME),type=oneshot
+	oc apply -f deployment/$(NAME).job.yml
+
 container: build
 	podman build -t quay.io/$(USER)/$(NAME):latest .
 
