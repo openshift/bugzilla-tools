@@ -1,7 +1,7 @@
 kind: CronJob
 apiVersion: batch/v1beta1
 metadata:
-  name: bugautomation
+  name: bug-automation
   namespace: ocp-eng-architects
 spec:
   schedule: '@hourly'
@@ -10,7 +10,7 @@ spec:
       template:
         metadata:
           labels:
-            app: bugautomation
+            app: bug-automation
         spec:
           volumes:
             - name: bugzilla-api-key
@@ -18,8 +18,8 @@ spec:
                 secretName: bugzilla-api-key
                 defaultMode: 420
           containers:
-            - name: bugautomation
-              image: 'quay.io/eparis/bugautomation:latest'
+            - name: bug-automation
+              image: 'quay.io/eparis/bug-automation:latest'
               resources: {}
               volumeMounts:
                 - name: bugzilla-api-key

@@ -4,7 +4,7 @@ metadata:
   name: upcoming-sprint-stats
   namespace: ocp-eng-architects
 spec:
-  schedule: '* 7 * * 1'
+  schedule: '0 * * * *'
   jobTemplate:
     spec:
       template:

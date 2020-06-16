@@ -1,9 +1,9 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 RUN microdnf update -y && microdnf clean all
 
-COPY bugautomation /bugautomation
-RUN chmod +x /bugautomation
+COPY bug-automation /bug-automation
+RUN chmod +x /bug-automation
 
 COPY operations/ operations/
 
-CMD /bugautomation --bugzilla-key=/etc/bugzilla/bugzillaKey
+CMD /bug-automation --bugzilla-key=/etc/bugzilla/bugzillaKey
