@@ -1,38 +1,31 @@
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: smartsheets
+  name: upcoming-sprint-stats
   namespace: ocp-eng-architects
   labels:
-    app: smartsheets
+    app: upcoming-sprint-stats
     type: oneshot
 spec:
   backoffLimit: 0
   template:
     metadata:
       labels:
-        app: smartsheets
+        app: upcoming-sprint-stats
     spec:
       volumes:
         - name: bugzilla-api-key
           secret:
             secretName: bugzilla-api-key
             defaultMode: 420
-        - name: smartsheets-api-key
-          secret:
-            secretName: smartsheets-api-key
-            defaultMode: 420
       containers:
-        - name: smartsheets
-          image: 'quay.io/eparis/smartsheets:latest'
+        - name: upcoming-sprint-stats
+          image: 'quay.io/eparis/upcoming-sprint-stats:latest'
           resources: {}
           volumeMounts:
             - name: bugzilla-api-key
               readOnly: true
               mountPath: /etc/bugzilla
-            - name: smartsheets-api-key
-              readOnly: true
-              mountPath: /etc/smartsheets
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: Always

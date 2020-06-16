@@ -13,19 +13,20 @@ import (
 )
 
 func doMain(cmd *cobra.Command, _ []string) error {
-	teams, err := teams.GetTeamData(cmd)
+	orgData, err := teams.GetOrgData(cmd)
 	if err != nil {
 		return err
 	}
 
-	bugData := &bugs.BugData{}
-	if err := bugs.ReconcileBugData(cmd, teams, bugData); err != nil {
+	errs := make(chan error, 1)
+	bugData, err := bugs.GetBugData(cmd, orgData, errs)
+	if err != nil {
 		return err
 	}
 	bugMap := bugData.GetBugMap()
 
-	fmt.Printf("%s,%s,%s,%s,%s,%s,%s,%s\n", "Name", "AllBugs", "UpcomingSprintBugs", "Managers")
-	for _, team := range teams.Teams {
+	fmt.Printf("%s,%s,%s,%s\n", "Name", "AllBugs", "UpcomingSprintBugs", "Managers")
+	for _, team := range orgData.Teams {
 		name := team.Name
 		managers := strings.Join(team.Managers, ",")
 		all := bugMap.CountAll(name)
