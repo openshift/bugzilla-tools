@@ -17,6 +17,7 @@ container-push: container
 	podman push quay.io/$(USER)/$(NAME):latest
 
 container-run: container
-	podman run -ti -v ./bugzillaKey:/etc/bugzilla/bugzillaKey:z quay.io/${USER}/$(NAME):latest
+	podman run -ti -v ./bugzillaKey:/etc/bugzilla/bugzillaKey:z -v ./overwriteTeamData.yml:/var/run/overwriteTeamData.yml:z -v ./githubKey:/etc/github/githubKey:z quay.io/eparis/bugs-per-team:latest /bugs-per-team --bugzilla-key=/etc/bugzilla/bugzillaKey --github-key=/etc/github/githubKey --overwrite-team-data=/var/run/overwriteTeamData.yml --data-from-github
+
 clean:
 	rm ./$(NAME)
