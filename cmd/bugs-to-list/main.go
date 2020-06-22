@@ -12,13 +12,13 @@ import (
 )
 
 func doMain(cmd *cobra.Command, _ []string) error {
-	teams, err := teams.GetTeamData(cmd)
+	orgData, err := teams.GetOrgData(cmd)
 	if err != nil {
 		return err
 	}
 
-	bugData := &bugs.BugData{}
-	err = bugs.ReconcileBugData(cmd, teams, bugData)
+	errs := make(chan error, 1)
+	bugData, err := bugs.GetBugData(cmd, orgData, errs)
 	if err != nil {
 		return err
 	}
