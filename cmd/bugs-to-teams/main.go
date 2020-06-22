@@ -17,8 +17,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	errs := make(chan error, 1)
-	bugData, err := bugs.GetBugData(cmd, orgData, errs)
+	bugData, err := bugs.GetBugData(cmd, orgData)
 	if err != nil {
 		return err
 	}

@@ -59,11 +59,11 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	}
 	orgData.Reconciler()
 
-	bugData, err := bugs.GetBugData(cmd, orgData, errs)
+	bugData, err := bugs.GetBugData(cmd, orgData)
 	if err != nil {
 		return err
 	}
-	bugData.Reconciler()
+	bugData.Reconciler(errs)
 
 	serveHTTP(errs, bugData)
 

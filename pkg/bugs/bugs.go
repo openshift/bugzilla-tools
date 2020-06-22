@@ -145,7 +145,6 @@ type BugData struct {
 	bugs    []*bugzilla.Bug
 	bugMap  BugMap
 	cmd     *cobra.Command
-	errs    chan error
 	client  bugzilla.Client
 	query   bugzilla.Query
 	orgData *teams.OrgData
@@ -180,7 +179,6 @@ func (bd *BugData) reconcile() error {
 		return err
 	}
 	bd.set(bugs, bugMap)
-	fmt.Printf("Successfully reconciled GetBugData. Teams:%d BugCount:%d\n", len(bd.orgData.Teams), len(bd.GetBugs()))
 	return nil
 }
 
@@ -275,26 +273,26 @@ func getBugzillaAccess(cmd *cobra.Command) (bugzilla.Client, bugzilla.Query, err
 	return client, query, nil
 }
 
-func (bd *BugData) Reconciler() {
+func (bd *BugData) Reconciler(errs chan error) {
 	go func() {
 		for true {
 			if err := bd.reconcile(); err != nil {
-				bd.errs <- err
+				errs <- err
 				return
 			}
+			fmt.Printf("Successfully reconciled GetBugData. Teams:%d BugCount:%d\n", len(bd.orgData.Teams), len(bd.GetBugs()))
 			time.Sleep(time.Minute * 5)
 		}
 	}()
 }
 
-func GetBugData(cmd *cobra.Command, orgData *teams.OrgData, errs chan error) (*BugData, error) {
+func GetBugData(cmd *cobra.Command, orgData *teams.OrgData) (*BugData, error) {
 	client, query, err := getBugzillaAccess(cmd)
 	if err != nil {
 		return nil, err
 	}
 	bugData := &BugData{
 		cmd:     cmd,
-		errs:    errs,
 		client:  client,
 		query:   query,
 		orgData: orgData,

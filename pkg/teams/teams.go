@@ -235,9 +235,6 @@ func getOrgData(cmd *cobra.Command) (*OrgData, error) {
 	} else {
 		orgData, err = getOrgDataFromService(cmd)
 	}
-	if err == nil {
-		fmt.Printf("Successfully fetched OrgData len(teams):%d len(releases): %d\n", len(orgData.Teams), len(orgData.Releases))
-	}
 	return orgData, err
 }
 
@@ -253,6 +250,7 @@ func (orgData *OrgData) Reconciler() {
 				log.Fatalln(err)
 			}
 			*orgData = *newOrgData
+			fmt.Printf("Successfully fetched OrgData len(teams):%d len(releases): %d\n", len(orgData.Teams), len(orgData.Releases))
 			time.Sleep(time.Minute * 5)
 		}
 	}()
