@@ -1,13 +1,35 @@
-mains := $(wildcard cmd/*/Makefile)
-dirs = $(dir $(mains))
+IMAGE_REGISTRY?=quay.io
 
-TOPTARGETS := build clean container container-push apply-config
+dirs := $(wildcard cmd/*)
+names := $(notdir $(dirs))
 
-pull-ubi:
-	podman pull registry.access.redhat.com/ubi8/ubi-minimal
+all: build
+.PHONY: all
 
-$(TOPTARGETS): pull-ubi $(dirs)
+# Include the library makefile
+include $(addprefix ./vendor/github.com/openshift/build-machinery-go/make/, \
+	golang.mk \
+	targets/openshift/deps-gomod.mk \
+	targets/openshift/images.mk \
+)
+
+
+define build-image-internal
+image-$(1):
+	podman build -t $(IMAGE_REGISTRY)/$(USER)/$(1):dev -f ./cmd/$(1)/Dockerfile .
+.PHONY: image-$(1)
+endef
+
+define build-image
+$(eval $(call build-image-internal,$(1)))
+endef
+
+$(foreach name,$(names),$(call build-image,$(name)))
+
+
+TOPTARGETS := apply-config
+$(TOPTARGETS): $(dirs)
 $(dirs):
 	$(MAKE) -C "$@" $(MAKECMDGOALS)
-
 .PHONY: $(TOPTARGETS) $(dirs)
+
