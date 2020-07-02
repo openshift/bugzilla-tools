@@ -2,6 +2,8 @@ package slack
 
 import (
 	"fmt"
+	"regexp"
+	"time"
 
 	"github.com/slack-go/slack"
 )
@@ -13,6 +15,10 @@ var peopleWithWrongSlackEmail = map[string]string{
 	"wking@redhat.com":       "trking@redhat.com",
 	"sanchezl@redhat.com":    "lusanche@redhat.com",
 }
+
+var (
+	backOffRegexp = regexp.MustCompile(`slack rate limit exceeded, retry after ([0-9]+s)`)
+)
 
 type ChannelClient interface {
 	MessageChannel(channel, message string) error
@@ -44,6 +50,18 @@ func (c *slackClient) MessageChannel(channel, message string) error {
 		return c.MessageDebug(debugMsg)
 	}
 	_, _, err := c.client.PostMessage(channel, slack.MsgOptionText(message, false))
+	if err != nil {
+		matches := backOffRegexp.FindStringSubmatch(err.Error())
+		if len(matches) != 2 {
+			return err
+		}
+		delay, parseErr := time.ParseDuration(matches[1])
+		if parseErr != nil {
+			return err
+		}
+		time.Sleep(delay)
+		_, _, err = c.client.PostMessage(channel, slack.MsgOptionText(message, false))
+	}
 	return err
 }
 
