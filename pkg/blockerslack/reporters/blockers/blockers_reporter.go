@@ -193,10 +193,12 @@ func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) t
 type notificationMap map[string]triageResult
 
 func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext) error {
-	//if err := c.bugData.Reconcile(); err != nil {
-	//return err
-	//}
-	peopleNotificationMap, teamNotificationMap := Report(ctx, c.bugData, syncCtx.Recorder(), &c.config)
+	c.orgData.Reconcile()
+	if err := c.bugData.Reconcile(); err != nil {
+		return err
+	}
+
+	peopleNotificationMap, teamNotificationMap := Report(ctx, c.orgData, c.bugData, syncCtx.Recorder(), &c.config)
 
 	sentToPeople := []string{}
 	for person, results := range peopleNotificationMap {
@@ -206,9 +208,9 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		_ = message
 		_ = person
 		// FIXME Actually send to individual people
-		//if err := c.slackClient.MessageEmail(person, message); err != nil {
-		//syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver:\n\n%s\n\n to %q: %v", message, person, err)
-		//}
+		if err := c.slackClient.MessageEmail(person, message); err != nil {
+			syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver:\n\n%s\n\n to %q: %v", message, person, err)
+		}
 	}
 
 	sentToTeam := []string{}
@@ -246,8 +248,15 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 	return nil
 }
 
-func Report(ctx context.Context, bugData *bugs.BugData, recorder events.Recorder, config *config.OperatorConfig) (peopleNotificationMap notificationMap, teamNotificationMap notificationMap) {
-	bugData = bugData.FilterByTeams([]string{"API Server & Auth", "Storage"})
+func Report(ctx context.Context, orgData *teams.OrgData, bugData *bugs.BugData, recorder events.Recorder, config *config.OperatorConfig) (peopleNotificationMap notificationMap, teamNotificationMap notificationMap) {
+	teamsWithChannel := []string{}
+	for team, teamInfo := range orgData.Teams {
+		if teamInfo.SlackChan != "" {
+			teamsWithChannel = append(teamsWithChannel, team)
+		}
+	}
+	bugData = bugData.FilterByTeams(teamsWithChannel)
+
 	peopleNotificationMap = notificationMap{}
 	peopleBugsMap := bugData.GetPeopleMap()
 	for person, bugList := range peopleBugsMap {

@@ -242,14 +242,18 @@ func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 	return getOrgData(cmd)
 }
 
+func (orgData *OrgData) Reconcile() {
+	newOrgData, err := getOrgData(orgData.cmd)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	*orgData = *newOrgData
+}
+
 func (orgData *OrgData) Reconciler() {
 	go func() {
 		for true {
-			newOrgData, err := getOrgData(orgData.cmd)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			*orgData = *newOrgData
+			orgData.Reconcile()
 			fmt.Printf("Successfully fetched OrgData len(teams):%d len(releases): %d\n", len(orgData.Teams), len(orgData.Releases))
 			time.Sleep(time.Minute * 5)
 		}
