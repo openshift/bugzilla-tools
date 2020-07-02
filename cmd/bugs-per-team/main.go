@@ -23,19 +23,19 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	// Get All OCP Bugs
-	bugs := bugData.GetBugMap()
 	targets, err := cmd.Flags().GetStringSlice("target-release")
 	if err != nil {
 		return err
 	}
-	bugs = bugs.FilterByTargetRelease(targets)
+	bugData = bugData.FilterByTargetRelease(targets)
 
 	severities, err := cmd.Flags().GetStringSlice("severity")
 	if err != nil {
 		return err
 	}
-	bugs = bugs.FilterBySeverity(severities)
+	bugData = bugData.FilterBySeverity(severities)
+
+	bugs := bugData.GetTeamMap()
 	keys := make([]string, 0, len(bugs))
 	for k := range bugs {
 		keys = append(keys, k)

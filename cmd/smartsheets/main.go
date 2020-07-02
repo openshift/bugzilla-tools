@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	targets = []string{"---", "4.5.0"}
+	targets = []string{"---", "4.6.0"}
 )
 
 func newIntCell(column int64, val int) goSmartSheet.Cell {
@@ -61,7 +61,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	bugMap := bugData.GetBugMap()
+	bugMap := bugData.GetTeamMap()
 
 	ssToken, err := getAuthToken(cmd)
 	if err != nil {

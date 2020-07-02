@@ -2,6 +2,18 @@
 /data
 /testData
 
+/blocker-slack
+/bug-automation
+/bug-exportor
+/bugs-per-team
+/bugs-to-list
+/bugs-to-teams
+/bugzilla-operator
+/generate
+/smartsheets
+/team-exportor
+/upcoming-sprint-stats
+
 # Created by https://www.gitignore.io/api/go,react
 # Edit at https://www.gitignore.io/?templates=go,react
 

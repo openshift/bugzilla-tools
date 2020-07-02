@@ -22,7 +22,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	bugs := bugData.GetBugMap()
+	bugs := bugData.GetTeamMap()
 	b, err := json.Marshal(bugs)
 	if err != nil {
 		return err

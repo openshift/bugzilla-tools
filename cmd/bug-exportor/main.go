@@ -23,7 +23,7 @@ const (
 
 func GetAPIHandler(bugData *bugs.BugData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		bugMap := bugData.GetBugMap()
+		bugMap := bugData.GetTeamMap()
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		err := json.NewEncoder(w).Encode(bugMap)
 		if err != nil {

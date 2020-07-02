@@ -11,6 +11,7 @@ const (
 
 type TeamInfo struct {
 	Name          string              `json:"name,omitempty"`
+	SlackChan     string              `json:"slack_chan,omitempty"`
 	Lead          string              `json:"lead,omitempty"`
 	Managers      []string            `json:"managers,omitempty"`
 	Group         string              `json:"group,omitempty"`

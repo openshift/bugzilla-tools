@@ -22,7 +22,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	bugMap := bugData.GetBugMap()
+	bugMap := bugData.GetTeamMap()
 
 	fmt.Printf("%s,%s,%s,%s\n", "Name", "AllBugs", "UpcomingSprintBugs", "Managers")
 	for _, team := range orgData.Teams {

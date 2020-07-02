@@ -18,6 +18,9 @@ define build-image-internal
 image-$(1):
 	podman build -t $(IMAGE_REGISTRY)/$(USER)/$(1):dev -f ./cmd/$(1)/Dockerfile .
 .PHONY: image-$(1)
+
+images: image-$(1)
+.PHONY: images
 endef
 
 define build-image
@@ -27,7 +30,7 @@ endef
 $(foreach name,$(names),$(call build-image,$(name)))
 
 
-TOPTARGETS := apply-config
+TOPTARGETS := apply-manifests
 $(TOPTARGETS): $(dirs)
 $(dirs):
 	$(MAKE) -C "$@" $(MAKECMDGOALS)

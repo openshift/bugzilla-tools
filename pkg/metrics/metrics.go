@@ -26,7 +26,7 @@ func labelsFromBug(bug *bugzilla.Bug, team string) prometheus.Labels {
 	}
 }
 
-func updateGauge(bugs bugs.BugMap, bugGauge *prometheus.GaugeVec) {
+func updateGauge(bugs bugs.TeamMap, bugGauge *prometheus.GaugeVec) {
 	nextGauges := map[int]prometheus.Labels{}
 	for team, bugs := range bugs {
 		for _, bug := range bugs {
@@ -59,7 +59,7 @@ func Setup(errs chan error, bugData *bugs.BugData) {
 	bugGauge := createGauge()
 	go func() {
 		for true {
-			bugs := bugData.GetBugMap()
+			bugs := bugData.GetTeamMap()
 			fmt.Printf("Found %d teams in bugMap!\n", len(bugs))
 			// Don't publish data until we actually get a response from BZ
 			if len(bugs) == 0 {

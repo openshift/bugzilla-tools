@@ -23,11 +23,15 @@ const (
 	bugDataFlagName   = "test-bug-data"
 	bugDataFlagDefVal = ""
 	bugDataFlagUsage  = "Path to file containing test bug data"
+
+	CurrentRelease = "4.5.0"
 )
 
-type BugMap map[string][]*bugzilla.Bug
+type PeopleMap map[string][]*bugzilla.Bug
 
-func (b BugMap) Teams() []string {
+type TeamMap map[string][]*bugzilla.Bug
+
+func (b TeamMap) Teams() []string {
 	out := []string{}
 	for team := range b {
 		out = append(out, team)
@@ -36,47 +40,11 @@ func (b BugMap) Teams() []string {
 	return out
 }
 
-func (b BugMap) FilterByTargetRelease(sTargets []string) BugMap {
-	targets := sets.NewString(sTargets...)
-	out := BugMap{}
-
-	for team, bugs := range b {
-		filtered := []*bugzilla.Bug{}
-		for i := range bugs {
-			bug := bugs[i]
-			if !targets.Has(bug.TargetRelease[0]) {
-				continue
-			}
-			filtered = append(filtered, bug)
-		}
-		out[team] = filtered
-	}
-	return out
-}
-
-func (b BugMap) FilterBySeverity(sSeverities []string) BugMap {
-	severities := sets.NewString(sSeverities...)
-	out := BugMap{}
-
-	for team, bugs := range b {
-		filtered := []*bugzilla.Bug{}
-		for i := range bugs {
-			bug := bugs[i]
-			if !severities.Has(bug.Severity) {
-				continue
-			}
-			filtered = append(filtered, bug)
-		}
-		out[team] = filtered
-	}
-	return out
-}
-
-func (b BugMap) CountAll(team string) int {
+func (b TeamMap) CountAll(team string) int {
 	return len(b[team])
 }
 
-func (b BugMap) CountUpcomingSprint(team string) int {
+func (b TeamMap) CountUpcomingSprint(team string) int {
 	count := 0
 	for _, bug := range b[team] {
 		for _, found := range bug.Keywords {
@@ -89,11 +57,11 @@ func (b BugMap) CountUpcomingSprint(team string) int {
 	return count
 }
 
-func (b BugMap) CountNotUpcomingSprint(team string) int {
+func (b TeamMap) CountNotUpcomingSprint(team string) int {
 	return b.CountAll(team) - b.CountUpcomingSprint(team)
 }
 
-func (b BugMap) CountLowSeverity(team string) int {
+func (b TeamMap) CountLowSeverity(team string) int {
 	count := 0
 	for _, bug := range b[team] {
 		if bug.Severity == "low" {
@@ -103,11 +71,11 @@ func (b BugMap) CountLowSeverity(team string) int {
 	return count
 }
 
-func (b BugMap) CountNotLowSeverity(team string) int {
+func (b TeamMap) CountNotLowSeverity(team string) int {
 	return b.CountAll(team) - b.CountLowSeverity(team)
 }
 
-func (b BugMap) CountTargetRelease(team string, targets []string) int {
+func (b TeamMap) CountTargetRelease(team string, targets []string) int {
 	count := 0
 	for _, bug := range b[team] {
 		targetRelease := bug.TargetRelease
@@ -121,7 +89,7 @@ func (b BugMap) CountTargetRelease(team string, targets []string) int {
 	return count
 }
 
-func (b BugMap) CountBlocker(team string, targets []string) int {
+func (b TeamMap) CountBlocker(team string, targets []string) int {
 	count := 0
 	for _, bug := range b[team] {
 		targetRelease := bug.TargetRelease
@@ -143,11 +111,77 @@ func (b BugMap) CountBlocker(team string, targets []string) int {
 type BugData struct {
 	sync.RWMutex
 	bugs    []*bugzilla.Bug
-	bugMap  BugMap
 	cmd     *cobra.Command
 	client  bugzilla.Client
 	query   bugzilla.Query
 	orgData *teams.OrgData
+}
+
+func (bd *BugData) clone() *BugData {
+	bugs := bd.GetBugs()
+	newBugs := make([]*bugzilla.Bug, len(bugs))
+	copy(newBugs, bugs)
+
+	bugData := &BugData{
+		cmd:     bd.cmd,
+		client:  bd.client,
+		query:   bd.query,
+		orgData: bd.orgData,
+	}
+	bugData.set(newBugs)
+	return bugData
+}
+
+func (orig *BugData) FilterByTargetRelease(sTargets []string) *BugData {
+	bd := orig.clone()
+	bugs := orig.GetBugs()
+
+	targets := sets.NewString(sTargets...)
+	filtered := []*bugzilla.Bug{}
+	for i := range bugs {
+		bug := bugs[i]
+		if !targets.Has(bug.TargetRelease[0]) {
+			continue
+		}
+		filtered = append(filtered, bug)
+	}
+	bd.set(filtered)
+	return bd
+}
+
+func (orig *BugData) FilterBySeverity(sSeverities []string) *BugData {
+	bd := orig.clone()
+	bugs := bd.GetBugs()
+
+	severities := sets.NewString(sSeverities...)
+	filtered := []*bugzilla.Bug{}
+	for i := range bugs {
+		bug := bugs[i]
+		if !severities.Has(bug.Severity) {
+			continue
+		}
+		filtered = append(filtered, bug)
+	}
+	bd.set(filtered)
+	return bd
+}
+
+// FIXME these should be loaded from orgData, not hard coded
+func (orig *BugData) FilterBlocker() *BugData {
+	bd := orig.FilterBySeverity([]string{"medium", "high", "urgent", "unspecified"})
+	bd = bd.FilterByTargetRelease([]string{"---", CurrentRelease})
+	return bd
+}
+
+func (orig *BugData) FilterByTeams(teams []string) *BugData {
+	bd := orig.clone()
+	teamMap := bd.GetTeamMap()
+	bugs := []*bugzilla.Bug{}
+	for _, team := range teams {
+		bugs = append(bugs, teamMap[team]...)
+	}
+	bd.set(bugs)
+	return bd
 }
 
 func (bd *BugData) GetBugs() []*bugzilla.Bug {
@@ -156,29 +190,35 @@ func (bd *BugData) GetBugs() []*bugzilla.Bug {
 	return bd.bugs
 }
 
-func (bd *BugData) GetBugMap() BugMap {
-	bd.RLock()
-	defer bd.RUnlock()
-	return bd.bugMap
+func (bd *BugData) GetTeamMap() TeamMap {
+	bugs := bd.GetBugs()
+	teamMap := buildTeamMap(bugs, bd.orgData)
+	return teamMap
 }
 
-func (bd *BugData) set(bugs []*bugzilla.Bug, bugMap map[string][]*bugzilla.Bug) {
+func (bd *BugData) GetPeopleMap() PeopleMap {
+	bugs := bd.GetBugs()
+	teamMap := buildPeopleMap(bugs)
+	return teamMap
+}
+
+func (bd *BugData) Length() int {
+	bugs := bd.GetBugs()
+	return len(bugs)
+}
+
+func (bd *BugData) set(bugs []*bugzilla.Bug) {
 	bd.Lock()
 	defer bd.Unlock()
 	bd.bugs = bugs
-	bd.bugMap = BugMap(bugMap)
 }
 
-func (bd *BugData) reconcile() error {
+func (bd *BugData) Reconcile() error {
 	bugs, err := bd.client.Search(bd.query)
 	if err != nil {
 		return err
 	}
-	bugMap, err := buildTeamMap(bugs, bd.orgData)
-	if err != nil {
-		return err
-	}
-	bd.set(bugs, bugMap)
+	bd.set(bugs)
 	return nil
 }
 
@@ -235,7 +275,7 @@ func getAllOpenBugsQuery() bugzilla.Query {
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
-		IncludeFields:  []string{"id", "summary", "status", "severity", "target_release", "component", "sub_components", "keywords"},
+		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",
@@ -247,8 +287,19 @@ func getAllOpenBugsQuery() bugzilla.Query {
 	}
 }
 
-func buildTeamMap(bugs []*bugzilla.Bug, orgData *teams.OrgData) (map[string][]*bugzilla.Bug, error) {
-	out := map[string][]*bugzilla.Bug{}
+func buildPeopleMap(bugs []*bugzilla.Bug) PeopleMap {
+	out := PeopleMap{}
+	for i := range bugs {
+		bug := bugs[i]
+		assignee := bug.AssignedTo
+		out[assignee] = append(out[assignee], bug)
+	}
+
+	return out
+}
+
+func buildTeamMap(bugs []*bugzilla.Bug, orgData *teams.OrgData) TeamMap {
+	out := TeamMap{}
 	for _, team := range orgData.Teams {
 		out[team.Name] = []*bugzilla.Bug{}
 	}
@@ -260,7 +311,7 @@ func buildTeamMap(bugs []*bugzilla.Bug, orgData *teams.OrgData) (map[string][]*b
 		out[team] = append(out[team], bug)
 	}
 
-	return out, nil
+	return out
 }
 
 func getBugzillaAccess(cmd *cobra.Command) (bugzilla.Client, bugzilla.Query, error) {
@@ -276,7 +327,7 @@ func getBugzillaAccess(cmd *cobra.Command) (bugzilla.Client, bugzilla.Query, err
 func (bd *BugData) Reconciler(errs chan error) {
 	go func() {
 		for true {
-			if err := bd.reconcile(); err != nil {
+			if err := bd.Reconcile(); err != nil {
 				errs <- err
 				return
 			}
@@ -297,7 +348,7 @@ func GetBugData(cmd *cobra.Command, orgData *teams.OrgData) (*BugData, error) {
 		query:   query,
 		orgData: orgData,
 	}
-	err = bugData.reconcile()
+	err = bugData.Reconcile()
 	if err != nil {
 		return nil, err
 	}
