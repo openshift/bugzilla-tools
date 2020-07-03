@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: team-exportor
+  name: team-exportor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-exportor
+  template:
+    metadata:
+      labels:
+        app: team-exportor
+    spec:
+      containers:
+      - image: quay.io/eparis/team-exportor:latest
+        imagePullPolicy: Always
+        name: team-exportor
+        resources: {}
+        volumeMounts:
+        - mountPath: /etc/github/
+          name: github-api-key
+          readOnly: true
+        - mountPath: /var/run/
+          name: team-overwrite
+          readOnly: true
+        ports:
+        - name: web
+          containerPort: 8000
+          protocol: TCP
+      restartPolicy: Always
+      volumes:
+      - name: github-api-key
+        secret:
+          defaultMode: 420
+          secretName: github-api-key
+      - configMap:
+          defaultMode: 420
+          name: overwrite-team-data
+        name: team-overwrite

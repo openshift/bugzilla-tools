@@ -1,11 +1,16 @@
 package slack
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"time"
 
-	"github.com/slack-go/slack"
+	"github.com/eparis/bugtool/pkg/config"
+
+	"github.com/ghodss/yaml"
+	slackgo "github.com/slack-go/slack"
+	"github.com/spf13/cobra"
 )
 
 var peopleWithWrongSlackEmail = map[string]string{
@@ -27,7 +32,7 @@ type ChannelClient interface {
 }
 
 type slackClient struct {
-	client       *slack.Client
+	client       *slackgo.Client
 	debugChannel string
 	debug        bool
 }
@@ -49,7 +54,7 @@ func (c *slackClient) MessageChannel(channel, message string) error {
 		debugMsg := fmt.Sprintf("DEBUG sendto: %s: %s", channel, message)
 		return c.MessageDebug(debugMsg)
 	}
-	_, _, err := c.client.PostMessage(channel, slack.MsgOptionText(message, false))
+	_, _, err := c.client.PostMessage(channel, slackgo.MsgOptionText(message, false))
 	if err != nil {
 		matches := backOffRegexp.FindStringSubmatch(err.Error())
 		if len(matches) != 2 {
@@ -60,7 +65,7 @@ func (c *slackClient) MessageChannel(channel, message string) error {
 			return err
 		}
 		time.Sleep(delay)
-		_, _, err = c.client.PostMessage(channel, slack.MsgOptionText(message, false))
+		_, _, err = c.client.PostMessage(channel, slackgo.MsgOptionText(message, false))
 	}
 	return err
 }
@@ -77,15 +82,46 @@ func (c *slackClient) MessageEmail(email, message string) error {
 	if err != nil {
 		return err
 	}
-	_, _, err = c.client.PostMessage(chanID, slack.MsgOptionText(message, false))
+	_, _, err = c.client.PostMessage(chanID, slackgo.MsgOptionText(message, false))
 	return err
 }
 
-func NewChannelClient(client *slack.Client, debugChannel string, debug bool) ChannelClient {
+type SlackCredentials struct {
+	SlackToken             string `yaml:"slackToken"`
+	SlackVerificationToken string `yaml:"slackVerificationToken"`
+}
+
+func (b SlackCredentials) DecodedSlackToken() string {
+	return config.Decode(b.SlackToken)
+}
+
+func (b SlackCredentials) DecodedSlackVerificationToken() string {
+	return config.Decode(b.SlackVerificationToken)
+}
+
+func NewChannelClient(cmd *cobra.Command, ctx context.Context, debugChannel string, debug bool) (ChannelClient, error) {
+	b, err := config.GetBytes(cmd, "slack-key", ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	sc := &SlackCredentials{}
+	if err := yaml.Unmarshal(b, sc); err != nil {
+		return nil, err
+	}
+
+	client := slackgo.New(sc.DecodedSlackToken(), slackgo.OptionDebug(true))
+
+	// This slack client is used for production notifications
+	// Be careful, this can spam people!
 	c := &slackClient{
 		client:       client,
 		debugChannel: debugChannel,
 		debug:        debug,
 	}
-	return c
+	return c, nil
+}
+
+func AddFlags(cmd *cobra.Command) {
+	cmd.Flags().String("slack-key", "slackKey", "path containing credentials to use slack")
 }

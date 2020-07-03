@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/davecgh/go-spew/spew"
-	//"github.com/eparis/bugzilla"
-	slackgo "github.com/slack-go/slack"
 	"github.com/spf13/cobra"
 
 	"github.com/eparis/bugtool/pkg/blockerslack/config"
@@ -28,15 +26,15 @@ func Run(ctx context.Context, cfg config.OperatorConfig, cmd *cobra.Command) err
 		return err
 	}
 
-	slackClient := slackgo.New(cfg.Credentials.DecodedSlackToken(), slackgo.OptionDebug(true))
-
-	// This slack client is used for production notifications
 	// Be careful, this can spam people!
-	slackChannelClient := slack.NewChannelClient(slackClient, cfg.SlackDebugChannel, false)
+	slackChannelClient, err := slack.NewChannelClient(cmd, ctx, cfg.SlackDebugChannel, cfg.Debug)
+	if err != nil {
+		return err
+	}
 
 	recorder := slack.NewRecorder(slackChannelClient, "BugzillaOperator")
 
-	recorder.Eventf("OperatorStarted", "Bugzilla Operator Started\n\n```\n%s\n```\n", spew.Sdump(cfg.Anonymize()))
+	recorder.Eventf("OperatorStarted", "Bugzilla Operator Started\n\n```\n%s\n```\n", spew.Sdump(cfg))
 
 	schedule := []string{
 		//"CRON_TZ=America/New_York 0 7 * * 1-5",

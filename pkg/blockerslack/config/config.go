@@ -1,55 +1,36 @@
 package config
 
 import (
-	"encoding/base64"
-	"strings"
-)
+	"context"
 
-type Credentials struct {
-	SlackToken             string `yaml:"slackToken"`
-	SlackVerificationToken string `yaml:"slackVerificationToken"`
-}
+	"github.com/eparis/bugtool/pkg/config"
+
+	"github.com/ghodss/yaml"
+	"github.com/spf13/cobra"
+)
 
 type Transition struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
 }
 
-type Group []string
-
 type OperatorConfig struct {
-	Credentials Credentials `yaml:"credentials"`
-
+	Debug             bool   `yaml:"debug"`
 	SlackDebugChannel string `yaml:"slackDebugChannel"`
 }
 
-// Anonymize makes a shallow copy of the config, suitable for dumping in logs (no sensitive data)
-func (c *OperatorConfig) Anonymize() OperatorConfig {
-	a := *c
-	if key := a.Credentials.SlackToken; len(key) > 0 {
-		a.Credentials.SlackToken = strings.Repeat("x", len(a.Credentials.DecodedSlackToken()))
+func GetConfig(cmd *cobra.Command, ctx context.Context) (*OperatorConfig, error) {
+	configBytes, err := config.GetBytes(cmd, "config", ctx)
+	if err != nil {
+		return nil, err
 	}
-	if key := a.Credentials.SlackVerificationToken; len(key) > 0 {
-		a.Credentials.SlackVerificationToken = strings.Repeat("x", len(a.Credentials.DecodedSlackVerificationToken()))
+	c := &OperatorConfig{}
+	if err := yaml.Unmarshal(configBytes, c); err != nil {
+		return nil, err
 	}
-	return a
+	return c, nil
 }
 
-func decode(s string) string {
-	if strings.HasPrefix(s, "base64:") {
-		data, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(s, "base64:"))
-		if err != nil {
-			return s
-		}
-		return string(data)
-	}
-	return s
-}
-
-func (b Credentials) DecodedSlackToken() string {
-	return decode(b.SlackToken)
-}
-
-func (b Credentials) DecodedSlackVerificationToken() string {
-	return decode(b.SlackVerificationToken)
+func AddFlags(cmd *cobra.Command) {
+	cmd.Flags().String("config", "config.yaml", "Path to operator config")
 }
