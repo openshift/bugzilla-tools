@@ -15,8 +15,9 @@ type Transition struct {
 }
 
 type OperatorConfig struct {
-	Debug             bool   `yaml:"debug"`
-	SlackDebugChannel string `yaml:"slackDebugChannel"`
+	Debug             bool              `yaml:"debug"`
+	SlackDebugChannel string            `yaml:"slackDebugChannel"`
+	BZToSlackEmail    map[string]string `yaml:"bz_to_slack_email"`
 }
 
 func GetConfig(cmd *cobra.Command, ctx context.Context) (*OperatorConfig, error) {

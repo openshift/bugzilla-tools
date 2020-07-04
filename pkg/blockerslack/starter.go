@@ -32,6 +32,8 @@ func Run(ctx context.Context, cfg config.OperatorConfig, cmd *cobra.Command) err
 		return err
 	}
 
+	slackChannelClient.SetEmailMap(cfg.BZToSlackEmail)
+
 	recorder := slack.NewRecorder(slackChannelClient, "BugzillaOperator")
 
 	recorder.Eventf("OperatorStarted", "Bugzilla Operator Started\n\n```\n%s\n```\n", spew.Sdump(cfg))

@@ -13,13 +13,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var peopleWithWrongSlackEmail = map[string]string{
-	"sttts@redhat.com":       "sschiman@redhat.com",
-	"rphillips@redhat.com":   "rphillip@redhat.com",
-	"adam.kaplan@redhat.com": "adkaplan@redhat.com",
-	"wking@redhat.com":       "trking@redhat.com",
-	"sanchezl@redhat.com":    "lusanche@redhat.com",
-}
+const (
+	// NoneEmail can be put in the SetEmailMap() to not send someone a message
+	NoneEmail = "NONE"
+)
 
 var (
 	backOffRegexp = regexp.MustCompile(`slack rate limit exceeded, retry after ([0-9]+s)`)
@@ -29,20 +26,26 @@ type ChannelClient interface {
 	MessageChannel(channel, message string) error
 	MessageDebug(message string) error
 	MessageEmail(email, message string) error
+	SetEmailMap(map[string]string)
 }
 
 type slackClient struct {
 	client       *slackgo.Client
 	debugChannel string
 	debug        bool
+	emailMap     map[string]string
 }
 
-func BugzillaToSlackEmail(originalEmail string) string {
-	realEmail, ok := peopleWithWrongSlackEmail[originalEmail]
+func (c slackClient) BugzillaToSlackEmail(bugzillaEmail string) string {
+	slackEmail, ok := c.emailMap[bugzillaEmail]
 	if ok {
-		return realEmail
+		return slackEmail
 	}
-	return originalEmail
+	return bugzillaEmail
+}
+
+func (c *slackClient) SetEmailMap(m map[string]string) {
+	c.emailMap = m
 }
 
 func (c *slackClient) MessageDebug(message string) error {
@@ -71,10 +74,14 @@ func (c *slackClient) MessageChannel(channel, message string) error {
 }
 
 func (c *slackClient) MessageEmail(email, message string) error {
+	slackEmail := c.BugzillaToSlackEmail(email)
 	if c.debug {
-		return c.MessageDebug(fmt.Sprintf("DEBUG: %q will receive:\n%s", email, message))
+		return c.MessageDebug(fmt.Sprintf("DEBUG: %q will receive:\n%s", slackEmail, message))
 	}
-	user, err := c.client.GetUserByEmail(BugzillaToSlackEmail(email))
+	if slackEmail == NoneEmail {
+		return nil
+	}
+	user, err := c.client.GetUserByEmail(slackEmail)
 	if err != nil {
 		return err
 	}
