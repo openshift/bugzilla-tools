@@ -5,28 +5,24 @@ import (
 
 	"github.com/eparis/bugtool/pkg/config"
 
-	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 )
 
 type Transition struct {
-	From string `yaml:"from"`
-	To   string `yaml:"to"`
+	From string `json:"from"`
+	To   string `json:"to"`
 }
 
 type OperatorConfig struct {
-	Debug             bool              `yaml:"debug"`
-	SlackDebugChannel string            `yaml:"slackDebugChannel"`
-	BZToSlackEmail    map[string]string `yaml:"bz_to_slack_email"`
+	Debug             bool              `json:"debug"`
+	SlackDebugChannel string            `json:"slackDebugChannel"`
+	BZToSlackEmail    map[string]string `json:"bz_to_slack_email"`
 }
 
 func GetConfig(cmd *cobra.Command, ctx context.Context) (*OperatorConfig, error) {
-	configBytes, err := config.GetBytes(cmd, "config", ctx)
-	if err != nil {
-		return nil, err
-	}
 	c := &OperatorConfig{}
-	if err := yaml.Unmarshal(configBytes, c); err != nil {
+	err := config.GetConfig(cmd, "config", ctx, c)
+	if err != nil {
 		return nil, err
 	}
 	return c, nil

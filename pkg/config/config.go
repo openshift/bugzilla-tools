@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ghodss/yaml"
 	"github.com/openshift/library-go/pkg/controller/fileobserver"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
@@ -30,22 +31,22 @@ func restartOnConfigChange(ctx context.Context, path string, startingContent []b
 	observer.Run(ctx.Done())
 }
 
-// GetBytes will return the bytes from the file specified in a flag named flagName.
-// It will also start a watch on the file which will terminate the program if the
-// file changes.
-func GetBytes(cmd *cobra.Command, flagName string, ctx context.Context) ([]byte, error) {
+// GetConfig will populate `cfg` with the contents in the file specified by the `flagname` in from `cmd`
+// It will also start watching the file and will exit the program if the file changes
+func GetConfig(cmd *cobra.Command, flagName string, ctx context.Context, cfg interface{}) error {
 	configPath, err := cmd.Flags().GetString(flagName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	configBytes, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	go restartOnConfigChange(ctx, configPath, configBytes)
-	return configBytes, nil
+
+	return yaml.Unmarshal(configBytes, cfg)
 }
 
 func Decode(s string) string {

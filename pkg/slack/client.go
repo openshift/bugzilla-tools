@@ -8,7 +8,6 @@ import (
 
 	"github.com/eparis/bugtool/pkg/config"
 
-	"github.com/ghodss/yaml"
 	slackgo "github.com/slack-go/slack"
 	"github.com/spf13/cobra"
 )
@@ -94,8 +93,8 @@ func (c *slackClient) MessageEmail(email, message string) error {
 }
 
 type SlackCredentials struct {
-	SlackToken             string `yaml:"slackToken"`
-	SlackVerificationToken string `yaml:"slackVerificationToken"`
+	SlackToken             string `json:"slackToken"`
+	SlackVerificationToken string `json:"slackVerificationToken"`
 }
 
 func (b SlackCredentials) DecodedSlackToken() string {
@@ -107,13 +106,9 @@ func (b SlackCredentials) DecodedSlackVerificationToken() string {
 }
 
 func NewChannelClient(cmd *cobra.Command, ctx context.Context, debugChannel string, debug bool) (ChannelClient, error) {
-	b, err := config.GetBytes(cmd, "slack-key", ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	sc := &SlackCredentials{}
-	if err := yaml.Unmarshal(b, sc); err != nil {
+	err := config.GetConfig(cmd, "slack-key", ctx, sc)
+	if err != nil {
 		return nil, err
 	}
 
