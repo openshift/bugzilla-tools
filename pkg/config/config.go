@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -12,6 +13,10 @@ import (
 	"github.com/openshift/library-go/pkg/controller/fileobserver"
 	"github.com/spf13/cobra"
 	"k8s.io/klog"
+)
+
+var (
+	NotSetError = fmt.Errorf("Not set")
 )
 
 func restartOnConfigChange(ctx context.Context, path string, startingContent []byte) {
@@ -31,12 +36,40 @@ func restartOnConfigChange(ctx context.Context, path string, startingContent []b
 	observer.Run(ctx.Done())
 }
 
-// GetConfig will populate `cfg` with the contents in the file specified by the `flagname` in from `cmd`
+// GetConfigString will return a string with the contents of the file specified by the `flagname` from `cmd`
+// It will also start watching the file and will exit the program if the file changes
+func GetConfigString(cmd *cobra.Command, flagName string, ctx context.Context) (string, error) {
+	configPath, err := cmd.Flags().GetString(flagName)
+	if err != nil {
+		return "", err
+	}
+
+	if configPath == "" {
+		return "", NotSetError
+	}
+
+	configBytes, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return "", err
+	}
+
+	go restartOnConfigChange(ctx, configPath, configBytes)
+
+	out := strings.TrimRight(string(configBytes), "\r\n")
+
+	return out, nil
+}
+
+// GetConfig will populate `cfg` with the contents in the file specified by the `flagname` from `cmd`
 // It will also start watching the file and will exit the program if the file changes
 func GetConfig(cmd *cobra.Command, flagName string, ctx context.Context, cfg interface{}) error {
 	configPath, err := cmd.Flags().GetString(flagName)
 	if err != nil {
 		return err
+	}
+
+	if configPath == "" {
+		return NotSetError
 	}
 
 	configBytes, err := ioutil.ReadFile(configPath)

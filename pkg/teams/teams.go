@@ -8,8 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/eparis/bugtool/pkg/config"
 
 	"github.com/eparis/bugzilla"
 	"github.com/ghodss/yaml"
@@ -94,17 +95,13 @@ func teamDataToOrgData(teamData Teams) (*OrgData, error) {
 }
 
 func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
-	keyFile, err := cmd.Flags().GetString("github-key")
-	if err != nil {
-		return nil, err
-	}
-	dat, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return nil, err
-	}
-	apikey := strings.TrimRight(string(dat), "\r\n")
-
 	ctx := context.Background()
+
+	apikey, err := config.GetConfigString(cmd, githubKeyFlagName, ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: apikey},
 	)
@@ -133,27 +130,14 @@ func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
 	return orgData, nil
 }
 
-var (
-	notSetError = fmt.Errorf("Not set")
-)
-
 func getOrgDataFromFile(cmd *cobra.Command, whichFlag string) (*OrgData, error) {
-	path, err := cmd.Flags().GetString(whichFlag)
-	if err != nil {
-		return nil, err
-	}
-	if path == "" {
-		return nil, notSetError
-	}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
+	ctx := context.Background()
 	teamData := Teams{}
-	err = yaml.Unmarshal(data, &teamData)
+	err := config.GetConfig(cmd, whichFlag, ctx, &teamData)
 	if err != nil {
 		return nil, err
 	}
+
 	orgData, err := teamDataToOrgData(teamData)
 	if err != nil {
 		return nil, err
@@ -163,10 +147,10 @@ func getOrgDataFromFile(cmd *cobra.Command, whichFlag string) (*OrgData, error) 
 
 func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	orgData, err := getOrgDataFromFile(cmd, teamDataFlagName)
-	if err != nil && err != notSetError {
+	if err != nil && err != config.NotSetError {
 		// bail if we got a real error
 		return nil, err
-	} else if err == notSetError {
+	} else if err == config.NotSetError {
 		// if the error was that the flag wasn't set pull from github
 		orgData, err = getOrgDataFromLi(cmd)
 		if err != nil {
@@ -176,7 +160,7 @@ func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 
 	// get the overwrite data
 	overrideOrgData, err := getOrgDataFromFile(cmd, teamOverwriteFlagName)
-	if err != nil && err != notSetError {
+	if err != nil && err != config.NotSetError {
 		return nil, err
 	} else if err == nil {
 		// merge overwrite with the main data
