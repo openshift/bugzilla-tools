@@ -2,41 +2,44 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: team-exportor
-  name: team-exportor
+    app: blocker-slack
+  name: blocker-slack
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: team-exportor
+      app: blocker-slack
   template:
     metadata:
       labels:
-        app: team-exportor
+        app: blocker-slack
     spec:
       containers:
-      - image: quay.io/eparis/team-exportor:latest
+      - image: quay.io/eparis/blocker-slack:latest
         imagePullPolicy: Always
-        name: team-exportor
+        name: blocker-slack
         resources: {}
         volumeMounts:
-        - mountPath: /etc/github/
-          name: github-api-key
+        - name: slack-key
           readOnly: true
-        - mountPath: /var/run/
-          name: team-overwrite
+          mountPath: /etc/slack
+        - name: bugzilla-api-key
           readOnly: true
-        ports:
-        - name: web
-          containerPort: 8000
-          protocol: TCP
+          mountPath: /etc/bugzilla
+        - name: blocker-slack-config
+          readOnly: true
+          mountPath: /etc/blocker-slack
       restartPolicy: Always
       volumes:
-      - name: github-api-key
+      - name: bugzilla-api-key
         secret:
+          secretName: bugzilla-api-key
           defaultMode: 420
-          secretName: github-api-key
-      - configMap:
+      - name: slack-key
+        secret:
+          secretName: slack-key
           defaultMode: 420
-          name: overwrite-team-data
-        name: team-overwrite
+      - name: blocker-slack-config
+        configMap:
+          name: blocker-slack-config
+          defaultMode: 420

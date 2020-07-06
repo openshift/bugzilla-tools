@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/eparis/bugzilla"
@@ -244,7 +243,6 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 	if err := c.slackClient.MessageDebug(message); err != nil {
 		syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver stats to debug channel: %v", err)
 	}
-	os.Exit(0)
 	return nil
 }
 

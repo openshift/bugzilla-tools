@@ -39,8 +39,8 @@ func Run(ctx context.Context, cfg config.OperatorConfig, cmd *cobra.Command) err
 	recorder.Eventf("OperatorStarted", "Bugzilla Operator Started\n\n```\n%s\n```\n", spew.Sdump(cfg))
 
 	schedule := []string{
-		//"CRON_TZ=America/New_York 0 7 * * 1-5",
-		"* * * * *",
+		"CRON_TZ=America/New_York 0 7 * * 1-5",
+		//"* * * * *",
 	}
 	blockerReporter := blockers.NewBlockersReporter(schedule, cfg, bugData, orgData, slackChannelClient, recorder)
 
