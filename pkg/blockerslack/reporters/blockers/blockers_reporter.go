@@ -180,7 +180,7 @@ func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) t
 			r.needTriageIDs = append(r.needTriageIDs, bug.ID)
 		}
 
-		if targetRelease == currentTargetRelease || targetRelease == "---" {
+		if (targetRelease == currentTargetRelease || targetRelease == "---") && (bug.Severity != "low") {
 			r.blockers = append(r.blockers, bugutil.FormatBugMessage(bug))
 			r.blockerIDs = append(r.blockerIDs, bug.ID)
 		}
