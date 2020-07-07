@@ -1,4 +1,4 @@
-module github.com/eparis/bugtool
+module github.com/openshift/bugzilla-tools
 
 go 1.14
 
@@ -10,15 +10,11 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/gorilla/handlers v1.4.2
 	github.com/imdario/mergo v0.3.9
-	github.com/kr/pretty v0.1.0
 	github.com/openshift/build-machinery-go v0.0.0-20200512074546-3744767c4131
 	github.com/openshift/library-go v0.0.0-20200623125929-17bb296f39b8
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.7.1
-	github.com/shomali11/commander v0.0.0-20191122162317-51bc574c29ba
-	github.com/shomali11/proper v0.0.0-20190608032528-6e70a05688e7
 	github.com/sirupsen/logrus v1.6.0
 	github.com/slack-go/slack v0.6.5
 	github.com/spf13/cobra v1.0.0

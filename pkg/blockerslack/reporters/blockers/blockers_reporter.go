@@ -11,12 +11,12 @@ import (
 	"github.com/openshift/library-go/pkg/operator/events"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/eparis/bugtool/pkg/blockerslack/bugutil"
-	"github.com/eparis/bugtool/pkg/blockerslack/config"
-	"github.com/eparis/bugtool/pkg/bugs"
-	"github.com/eparis/bugtool/pkg/teams"
-	//"github.com/eparis/bugtool/pkg/cache"
-	"github.com/eparis/bugtool/pkg/slack"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/bugutil"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
+	//"github.com/openshift/bugzilla-tools/pkg/cache"
+	"github.com/openshift/bugzilla-tools/pkg/slack"
 )
 
 type BlockersReporter struct {

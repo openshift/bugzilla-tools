@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/eparis/bugtool/pkg/config"
+	"github.com/openshift/bugzilla-tools/pkg/config"
 
 	"github.com/eparis/bugzilla"
 	"github.com/ghodss/yaml"
@@ -183,7 +183,7 @@ func getOrgDataFromService(cmd *cobra.Command) (*OrgData, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "github.com/eparis/bugtool/pkg/teams")
+	req.Header.Set("User-Agent", "github.com/openshift/bugzilla-tools/pkg/teams")
 
 	res, err := client.Do(req)
 	if err != nil {

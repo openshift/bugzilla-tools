@@ -12,8 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/eparis/bugtool/pkg/api"
-	"github.com/eparis/bugtool/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/api"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
 )
 
 func getBugActions() ([]api.BugAction, error) {

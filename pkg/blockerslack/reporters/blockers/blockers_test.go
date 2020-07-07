@@ -7,8 +7,8 @@ import (
 
 	"github.com/eparis/bugzilla"
 
-	"github.com/eparis/bugtool/pkg/cache"
-	"github.com/eparis/bugtool/pkg/blockerslack/bugutil"
+	"github.com/openshift/bugzilla-tools/pkg/cache"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/bugutil"
 )
 
 func TestNewBlockersReporter_Triage(t *testing.T) {

@@ -6,11 +6,11 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
 
-	"github.com/eparis/bugtool/pkg/blockerslack/config"
-	"github.com/eparis/bugtool/pkg/blockerslack/reporters/blockers"
-	"github.com/eparis/bugtool/pkg/bugs"
-	"github.com/eparis/bugtool/pkg/slack"
-	"github.com/eparis/bugtool/pkg/teams"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/reporters/blockers"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/slack"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
 )
 
 const bugzillaEndpoint = "https://bugzilla.redhat.com"

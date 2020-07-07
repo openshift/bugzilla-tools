@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/eparis/bugtool/pkg/teams"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
 	"github.com/eparis/bugzilla"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"

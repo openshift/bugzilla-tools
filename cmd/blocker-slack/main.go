@@ -16,12 +16,12 @@ import (
 	"k8s.io/component-base/logs"
 	"k8s.io/klog"
 
-	"github.com/eparis/bugtool/pkg/blockerslack"
-	"github.com/eparis/bugtool/pkg/blockerslack/config"
-	"github.com/eparis/bugtool/pkg/bugs"
-	"github.com/eparis/bugtool/pkg/slack"
-	"github.com/eparis/bugtool/pkg/teams"
-	"github.com/eparis/bugtool/pkg/version"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/slack"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
+	"github.com/openshift/bugzilla-tools/pkg/version"
 )
 
 func main() {

@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/eparis/bugtool/pkg/config"
+	"github.com/openshift/bugzilla-tools/pkg/config"
 
 	slackgo "github.com/slack-go/slack"
 	"github.com/spf13/cobra"

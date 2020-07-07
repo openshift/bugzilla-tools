@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eparis/bugtool/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
 	"github.com/eparis/bugzilla"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

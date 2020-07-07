@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 
-	"github.com/eparis/bugtool/pkg/config"
+	"github.com/openshift/bugzilla-tools/pkg/config"
 
 	"github.com/spf13/cobra"
 )

@@ -6,7 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/eparis/bugzilla"
 
-	"github.com/eparis/bugtool/pkg/slack"
+	"github.com/openshift/bugzilla-tools/pkg/slack"
 )
 
 type stagingBugzillaClient struct {

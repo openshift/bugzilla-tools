@@ -7,7 +7,7 @@ import (
 
 	"github.com/eparis/bugzilla"
 
-	"github.com/eparis/bugtool/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
 )
 
 func GetBugURL(b *bugzilla.Bug) string {

@@ -7,7 +7,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/eparis/bugtool/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
 )
 
 func TestExpandGroup(t *testing.T) {

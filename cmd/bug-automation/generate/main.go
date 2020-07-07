@@ -11,7 +11,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 
-	"github.com/eparis/bugtool/pkg/api"
+	"github.com/openshift/bugzilla-tools/pkg/api"
 )
 
 func blockerSeverity() []string {

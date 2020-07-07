@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/eparis/bugtool/pkg/bugs"
-	"github.com/eparis/bugtool/pkg/teams"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
 	"github.com/spf13/cobra"
 )
 

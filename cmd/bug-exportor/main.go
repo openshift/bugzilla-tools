@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/eparis/bugtool/pkg/bugs"
-	"github.com/eparis/bugtool/pkg/metrics"
-	"github.com/eparis/bugtool/pkg/teams"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
+	"github.com/openshift/bugzilla-tools/pkg/metrics"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 )
