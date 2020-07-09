@@ -3,7 +3,7 @@ all: build run
 build:
 	go build ./
 
-run:
+run: build
 	./generate
 
 .PHONY: all build run

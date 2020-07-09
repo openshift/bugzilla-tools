@@ -7,8 +7,8 @@ import (
 
 	"github.com/eparis/bugzilla"
 
-	"github.com/openshift/bugzilla-tools/pkg/cache"
 	"github.com/openshift/bugzilla-tools/pkg/blockerslack/bugutil"
+	"github.com/openshift/bugzilla-tools/pkg/cache"
 )
 
 func TestNewBlockersReporter_Triage(t *testing.T) {
@@ -21,11 +21,11 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 	}{
 		{
 			name:   "bug is blocker",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
-					TargetRelease: []string{"4.5.0"},
+					TargetRelease: []string{"4.6.0"},
 					Severity:      "high",
 				},
 			},
@@ -34,7 +34,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		},
 		{
 			name:   "bug target release is higher than target",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
@@ -47,7 +47,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		},
 		{
 			name:   "bug target release is lower than target",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
@@ -60,7 +60,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		},
 		{
 			name:   "bug target is not set and need needTriage",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
@@ -73,7 +73,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		},
 		{
 			name:   "bug target and severity is not set and need needTriage",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
@@ -86,11 +86,11 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		},
 		{
 			name:   "bug severity is not set, but it is a blocker and need needTriage",
-			target: "4.5.0",
+			target: "4.6.0",
 			bugs: []bugzilla.Bug{
 				{
 					ID:            1,
-					TargetRelease: []string{"4.5.0"},
+					TargetRelease: []string{"4.6.0"},
 					Severity:      "unspecified",
 				},
 			},

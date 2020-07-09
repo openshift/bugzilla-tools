@@ -37,7 +37,7 @@ func bugsTargetOldZeroQuery() bugzilla.Query {
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV"},
-		TargetRelease:  []string{"4.1.0", "4.2.0", "4.3.0", "4.4.0"},
+		TargetRelease:  []string{"4.1.0", "4.2.0", "4.3.0", "4.4.0", "4.5.0"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",

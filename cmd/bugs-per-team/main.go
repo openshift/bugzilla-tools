@@ -56,7 +56,7 @@ func main() {
 	}
 	bugs.AddFlags(cmd)
 	teams.AddFlags(cmd)
-	cmd.Flags().StringSlice("target-release", []string{"4.5.0", "---"}, "target release to filter by")
+	cmd.Flags().StringSlice("target-release", []string{"4.6.0", "---"}, "target release to filter by")
 	cmd.Flags().StringSlice("severity", []string{"medium", "high", "urgent", "unspecified"}, "severities to filter by")
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	if err := cmd.Execute(); err != nil {

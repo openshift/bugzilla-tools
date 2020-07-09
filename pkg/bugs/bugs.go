@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/openshift/bugzilla-tools/pkg/teams"
 	"github.com/eparis/bugzilla"
+	"github.com/openshift/bugzilla-tools/pkg/teams"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -24,7 +24,7 @@ const (
 	bugDataFlagDefVal = ""
 	bugDataFlagUsage  = "Path to file containing test bug data"
 
-	CurrentRelease = "4.5.0"
+	CurrentRelease = "4.6.0"
 )
 
 type PeopleMap map[string][]*bugzilla.Bug
