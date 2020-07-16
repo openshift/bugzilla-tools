@@ -4,7 +4,7 @@ build:
 	go build ./
 
 run: build
-	./$(NAME)
+	./$(NAME)  --data-from-github --overwrite-team-data=overwriteTeamData.yml
 
 apply-config: container-push
 	oc create secret generic bugzilla-api-key --from-file=bugzillaKey --dry-run=client -o yaml | oc apply -f -

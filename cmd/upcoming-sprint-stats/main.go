@@ -25,12 +25,14 @@ func doMain(cmd *cobra.Command, _ []string) error {
 	bugMap := bugData.GetTeamMap()
 
 	fmt.Printf("%s,%s,%s,%s\n", "Name", "AllBugs", "UpcomingSprintBugs", "Managers")
-	for _, team := range orgData.Teams {
-		name := team.Name
-		managers := strings.Join(team.Managers, ",")
-		all := bugMap.CountAll(name)
-		upcomingSprint := bugMap.CountUpcomingSprint(name)
-		fmt.Printf("%s,%d,%d,%s\n", name, all, upcomingSprint, managers)
+
+	teams := orgData.GetTeamNames()
+	for _, team := range teams {
+		teamInfo := orgData.Teams[team]
+		managers := strings.Join(teamInfo.Managers, ",")
+		all := bugMap.CountAll(team)
+		upcomingSprint := bugMap.CountUpcomingSprint(team)
+		fmt.Printf("%s,%d,%d,%s\n", team, all, upcomingSprint, managers)
 	}
 	return nil
 }

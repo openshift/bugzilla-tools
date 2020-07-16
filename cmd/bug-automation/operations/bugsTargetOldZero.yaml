@@ -31,7 +31,7 @@ query:
   - 4.2.0
   - 4.3.0
   - 4.4.0
-  - 4.5.0
+    #- 4.5.0
 update:
   comment:
     body: Unsetting the target release because this bug targets a .0 release which

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/openshift/bugzilla-tools/pkg/config"
@@ -73,6 +74,15 @@ func (orgData OrgData) GetTeam(bug *bugzilla.Bug) string {
 		}
 	}
 	return "unknown"
+}
+
+func (orgData OrgData) GetTeamNames() []string {
+	out := make([]string, 0, len(orgData.Teams))
+	for team, _ := range orgData.Teams {
+		out = append(out, team)
+	}
+	sort.Strings(out)
+	return out
 }
 
 // mainly move from the list of teams and releases to a map[name]team or map[name]release

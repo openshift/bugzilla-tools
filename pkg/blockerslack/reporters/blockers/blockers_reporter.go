@@ -213,6 +213,7 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		}
 	}
 
+	notSentToTeam := sets.NewString(c.orgData.GetTeamNames()...)
 	sentToTeam := []string{}
 	for team, results := range teamNotificationMap {
 		if results.totalCount == 0 {
@@ -229,6 +230,7 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 			syncCtx.Recorder().Warningf("Unable to find channel", "team %q not found", team)
 			continue
 		}
+		notSentToTeam.Delete(team)
 		sentToTeam = append(sentToTeam, team)
 		messages := results.getTeamMessages(bugs.CurrentRelease)
 		message := strings.Join(messages, "\n")
@@ -239,7 +241,8 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 
 	peopleMessage := fmt.Sprintf("Sent to people: %s", strings.Join(sentToPeople, ", "))
 	teamMessage := fmt.Sprintf("Sent to team: %s", strings.Join(sentToTeam, ", "))
-	messages := []string{peopleMessage, teamMessage}
+	notTeamMessage := fmt.Sprintf("Not sent to team: %s", strings.Join(notSentToTeam.List(), ", "))
+	messages := []string{peopleMessage, teamMessage, notTeamMessage}
 	message := strings.Join(messages, "\n")
 	if err := c.slackClient.MessageDebug(message); err != nil {
 		syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver stats to debug channel: %v", err)
