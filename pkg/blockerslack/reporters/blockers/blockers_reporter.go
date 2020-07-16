@@ -31,9 +31,9 @@ const (
 	countHrefFmt    = "%d bugs"
 	assigneeHrefFmt = "%d bugs assigned to %s"
 
-	blockerMsgFmt        = "It seems there are %s and these bugs are _%s_ *release blockers*:\nPlease keep eyes on these today!\n"
-	triageMsgFmt         = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Target Release_ field set, so I can stop bothering you :-)\n"
-	upcomingSprintMsgFmt = "There are %s which do not have _UpcomingSprint_.\nPlease apply this keyword if the bug will not be resolved during this sprint\n"
+	blockerMsgFmt = "It seems there are %s and these bugs are _%s_ *release blockers*:\nPlease keep eyes on these today!\n"
+	triageMsgFmt  = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Target Release_ field set, so I can stop bothering you :-)\n"
+	//upcomingSprintMsgFmt = "There are %s which do not have _UpcomingSprint_.\nPlease apply this keyword if the bug will not be resolved during this sprint\n"
 )
 
 func NewBlockersReporter(schedule []string, operatorConfig config.OperatorConfig, bugData *bugs.BugData, orgData *teams.OrgData, slackClient slack.ChannelClient, recorder events.Recorder) factory.Controller {
@@ -86,11 +86,11 @@ func (tr triageResult) getPersonalMessages() []string {
 		messages = append(messages, message)
 	}
 
-	needUpcomingSprintLen := len(tr.needUpcomingSprintIDs)
-	if needUpcomingSprintLen > 0 {
-		message := getLinkMsg(assigneeHrefFmt, upcomingSprintMsgFmt, tr.who, tr.needUpcomingSprintIDs)
-		messages = append(messages, message)
-	}
+	//needUpcomingSprintLen := len(tr.needUpcomingSprintIDs)
+	//if needUpcomingSprintLen > 0 {
+	//message := getLinkMsg(assigneeHrefFmt, upcomingSprintMsgFmt, tr.who, tr.needUpcomingSprintIDs)
+	//messages = append(messages, message)
+	//}
 
 	return messages
 }
