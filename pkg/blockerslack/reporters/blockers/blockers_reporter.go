@@ -207,7 +207,7 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		message := strings.Join(messages, "\n")
 		// FIXME Actually send to individual people
 		if err := c.slackClient.MessageEmail(person, message); err != nil {
-			syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver:\n\n%s\n\n to %q: %v", message, person, err)
+			syncCtx.Recorder().Warningf("DeliveryFailed", "To: %s\n%v", person, err)
 		}
 	}
 
