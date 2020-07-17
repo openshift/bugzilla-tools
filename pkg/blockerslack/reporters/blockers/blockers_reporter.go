@@ -237,7 +237,7 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		message := strings.Join(messages, "\n")
 		// FIXME Actually send to individual people
 		if err := c.slackClient.MessageEmail(person, message); err != nil {
-			syncCtx.Recorder().Warningf("DeliveryFailed", "To: %s\n%v", person, err)
+			syncCtx.Recorder().Warningf("DeliveryFailed", "To: %s: %v", person, err)
 		}
 	}
 
@@ -270,7 +270,7 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 	teamMessage := fmt.Sprintf("Sent to team: %s", strings.Join(sentToTeam, ", "))
 	notTeamMessage := fmt.Sprintf("Not sent to team: %s", strings.Join(notSentToTeam.List(), ", "))
 	messages := []string{teamMessage, notTeamMessage}
-	message := strings.Join(messages, "\n")
+	message := strings.Join(messages, "\n\n")
 	if err := c.slackClient.MessageDebug(message); err != nil {
 		syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver stats to debug channel: %v", err)
 	}
