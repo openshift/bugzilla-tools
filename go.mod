@@ -1,9 +1,10 @@
 module github.com/openshift/bugzilla-tools
 
-go 1.14
+go 1.15
 
 require (
 	cloud.google.com/go v0.65.0 // indirect
+	github.com/andygrunwald/go-jira v1.12.0
 	github.com/boltdb/bolt v1.3.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/eparis/bugzilla v0.0.0-20201022181800-66527237a3e8

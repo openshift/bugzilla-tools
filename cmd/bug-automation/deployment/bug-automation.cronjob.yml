@@ -5,6 +5,7 @@ metadata:
   namespace: ocp-eng-architects
 spec:
   schedule: '@hourly'
+  startingDeadlineSeconds: 86400
   jobTemplate:
     spec:
       template:

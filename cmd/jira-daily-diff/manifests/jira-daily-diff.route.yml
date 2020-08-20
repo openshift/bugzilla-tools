@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: jira-daily-diff
+  labels:
+    app: jira-daily-diff
+    app.kubernetes.io/component: jira-daily-diff
+    app.kubernetes.io/instance: jira-daily-diff
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  to:
+    kind: Service
+    name: jira-daily-diff
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
