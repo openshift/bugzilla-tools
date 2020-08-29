@@ -7,6 +7,7 @@ run: build
 	./$(NAME) --overwrite-team-data=overwriteTeamData.yml --data-from-github
 
 apply-config: container-push
+	oc create secret generic gsheet-key --from-file=config.json --from-file=token.json --dry-run=client -o yaml | oc apply -f -
 	oc create secret generic github-api-key --from-file=githubKey --dry-run=client -o yaml | oc apply -f -
 	oc create configmap overwrite-team-data --from-file=overwriteTeamData.yml  --dry-run=client -o yaml | oc apply -f -
 	oc apply -f deployment/$(NAME).deployment.yml

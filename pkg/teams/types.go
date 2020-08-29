@@ -2,6 +2,8 @@ package teams
 
 import (
 	"github.com/spf13/cobra"
+
+	sloAPI "github.com/openshift/bugzilla-tools/pkg/slo/api"
 )
 
 const (
@@ -10,13 +12,15 @@ const (
 )
 
 type TeamInfo struct {
-	Name          string              `json:"name,omitempty"`
-	SlackChan     string              `json:"slack_chan,omitempty"`
-	Lead          string              `json:"lead,omitempty"`
-	Managers      []string            `json:"managers,omitempty"`
-	Group         string              `json:"group,omitempty"`
-	Components    []string            `json:"components,omitempty"`
-	Subcomponents map[string][]string `json:"subcomponents,omitempty"`
+	Name          string                 `json:"name,omitempty"`
+	SlackChan     string                 `json:"slack_chan,omitempty"`
+	Lead          string                 `json:"lead,omitempty"`
+	Managers      []string               `json:"managers,omitempty"`
+	Group         string                 `json:"group,omitempty"`
+	Components    []string               `json:"components,omitempty"`
+	Subcomponents map[string][]string    `json:"subcomponents,omitempty"`
+	MemberCount   int                    `json:"memberCount,omitempty"`
+	SLO           map[string]sloAPI.Data `json:"slo,omitempty"`
 }
 
 type Milestones struct {
@@ -32,15 +36,17 @@ type ReleaseInfo struct {
 	Milestones *Milestones `json:"milestones,omitempty"`
 }
 
-type Teams struct {
-	OrgTitle string        `json:"OrgTitle,omitempty"`
-	Teams    []TeamInfo    `json:"Teams,omitempty"`
-	Releases []ReleaseInfo `json:"Releases,omitempty"`
+type DiskOrgData struct {
+	OrgTitle string                 `json:"OrgTitle,omitempty"`
+	Teams    []TeamInfo             `json:"Teams,omitempty"`
+	Releases []ReleaseInfo          `json:"Releases,omitempty"`
+	SLO      map[string]sloAPI.Data `json:"slo,omitempty"`
 }
 
 type OrgData struct {
 	OrgTitle string                 `json:"orgTitle,omitempty"`
 	Teams    map[string]TeamInfo    `json:"teams,omitempty"`
 	Releases map[string]ReleaseInfo `json:"releases,omitempty"`
+	SLO      map[string]sloAPI.Data `json:"slo,omitempty"`
 	cmd      *cobra.Command
 }

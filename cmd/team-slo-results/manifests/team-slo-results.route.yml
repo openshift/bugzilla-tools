@@ -1,0 +1,11 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: team-slo-results
+spec:
+  to:
+    kind: Service
+    name: team-slo-results
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

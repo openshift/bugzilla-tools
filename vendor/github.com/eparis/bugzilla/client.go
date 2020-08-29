@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -232,8 +233,8 @@ func (c *client) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 // UpdateBug updates the fields of a bug on the server
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 func (c *client) UpdateBug(id int, update BugUpdate) error {
-	logger := c.logger.WithFields(logrus.Fields{methodField: "UpdateBug", "id": id, "update": update})
 	body, err := json.Marshal(update)
+	logger := c.logger.WithFields(logrus.Fields{methodField: "UpdateBug", "id": id, "update": string(body)})
 	if err != nil {
 		return fmt.Errorf("failed to marshal update payload: %v", err)
 	}
@@ -248,6 +249,7 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 }
 
 func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
+	logger = logger.WithField("url", obfuscatedURL(req.URL.String())).WithField("verb", req.Method)
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
 		// some BugZilla servers are too old and can't handle the header.
 		// some don't want the query parameter. We can set both and keep
@@ -425,4 +427,10 @@ func (i identifierNotForPull) Error() string {
 func IsIdentifierNotForPullErr(err error) bool {
 	_, ok := err.(*identifierNotForPull)
 	return ok
+}
+
+var re = regexp.MustCompile(`api_key=[^&]*&`)
+
+func obfuscatedURL(url string) string {
+	return re.ReplaceAllString(url, `api_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
 }

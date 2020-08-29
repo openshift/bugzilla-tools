@@ -275,7 +275,7 @@ func getAllOpenBugsQuery() bugzilla.Query {
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
-		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords"},
+		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords", "cf_pm_score"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",
@@ -307,7 +307,7 @@ func buildTeamMap(bugs []*bugzilla.Bug, orgData *teams.OrgData) TeamMap {
 
 	for i := range bugs {
 		bug := bugs[i]
-		team := orgData.GetTeam(bug)
+		team := orgData.GetTeamName(bug)
 		out[team] = append(out[team], bug)
 	}
 
