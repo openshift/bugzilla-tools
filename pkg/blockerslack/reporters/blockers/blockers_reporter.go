@@ -36,6 +36,14 @@ const (
 	//upcomingSprintMsgFmt = "There are %s which do not have _UpcomingSprint_.\nPlease apply this keyword if the bug will not be resolved during this sprint\n"
 )
 
+var (
+	seriousKeywords = []string{
+		"ServiceDeliveryBlocker",
+		"TestBlocker",
+		"UpgradeBlocker",
+	}
+)
+
 func NewBlockersReporter(schedule []string, operatorConfig config.OperatorConfig, bugData *bugs.BugData, orgData *teams.OrgData, slackClient slack.ChannelClient, recorder events.Recorder) factory.Controller {
 	c := &BlockersReporter{
 		config:      operatorConfig,
@@ -49,6 +57,7 @@ func NewBlockersReporter(schedule []string, operatorConfig config.OperatorConfig
 type triageResult struct {
 	who                   string
 	bugs                  []int
+	seriousKeywordsIDs    map[string][]int
 	blockers              []string
 	blockerIDs            []int
 	needTriage            []string
@@ -135,7 +144,7 @@ func (tr triageResult) getTeamMessages(targetRelease string) []string {
 	href = fmt.Sprintf("%d Untriaged Bugs", triageCount)
 	triageMsg := makeBugzillaLink(href, tr.needTriageIDs)
 
-	return []string{
+	lines := []string{
 		fmt.Sprintf("\n:bug: *Today's %s OCP Bug Report:* :bug:\n", tr.who),
 		fmt.Sprintf("> %s", allBugsMsg),
 		fmt.Sprintf("> Bugs Severity Breakdown: %s", strings.Join(severityMessages, ", ")),
@@ -144,6 +153,17 @@ func (tr triageResult) getTeamMessages(targetRelease string) []string {
 		fmt.Sprintf("> %s", upcomingMsg),
 		fmt.Sprintf("> %s", triageMsg),
 	}
+
+	if tr.seriousKeywordsIDs != nil {
+		for _, keyword := range seriousKeywords {
+			if bugIDs, ok := tr.seriousKeywordsIDs[keyword]; ok {
+				href := fmt.Sprintf("%d Bugs with %s", len(bugIDs), keyword)
+				lines = append(lines, fmt.Sprintf("> %s", makeBugzillaLink(href, bugIDs)))
+			}
+		}
+	}
+
+	return lines
 }
 
 func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) triageResult {
@@ -156,6 +176,17 @@ func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) t
 	r.bugs = make([]int, 0, len(bugs))
 	for _, bug := range bugs {
 		r.bugs = append(r.bugs, bug.ID)
+
+		keywords := sets.NewString(bug.Keywords...)
+		for _, keyword := range seriousKeywords {
+			if keywords.Has(keyword) {
+				if r.seriousKeywordsIDs == nil {
+					r.seriousKeywordsIDs = make(map[string][]int)
+				}
+				r.seriousKeywordsIDs[keyword] = append(r.seriousKeywordsIDs[keyword], bug.ID)
+			}
+		}
+
 		if strings.Contains(bug.Whiteboard, "LifecycleStale") {
 			r.staleCount++
 			continue
@@ -164,7 +195,6 @@ func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) t
 		r.severityCount[bug.Severity]++
 		r.priorityCount[bug.Priority]++
 
-		keywords := sets.NewString(bug.Keywords...)
 		if !keywords.Has("UpcomingSprint") {
 			r.needUpcomingSprint = append(r.needUpcomingSprint, bugutil.FormatBugMessage(bug))
 			r.needUpcomingSprintIDs = append(r.needUpcomingSprintIDs, bug.ID)
