@@ -38,7 +38,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
-					TargetRelease: []string{"4.6.0"},
+					TargetRelease: []string{"4.6.z"},
 					Severity:      "high",
 				},
 			},
