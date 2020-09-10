@@ -14,7 +14,7 @@ import (
 func TestNewBlockersReporter_Triage(t *testing.T) {
 	tests := []struct {
 		name       string
-		bugs       []bugzilla.Bug
+		bugs       []*bugzilla.Bug
 		blockerIDs []int
 		triageIDs  []int
 		target     string
@@ -22,7 +22,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug is blocker",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"4.6.0"},
@@ -35,7 +35,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug target release is higher than target",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"4.6.0"},
@@ -48,7 +48,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug target release is lower than target",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"4.4.0"},
@@ -61,7 +61,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug target is not set and need needTriage",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"---"},
@@ -74,7 +74,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug target and severity is not set and need needTriage",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"---"},
@@ -87,7 +87,7 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 		{
 			name:   "bug severity is not set, but it is a blocker and need needTriage",
 			target: "4.6.0",
-			bugs: []bugzilla.Bug{
+			bugs: []*bugzilla.Bug{
 				{
 					ID:            1,
 					TargetRelease: []string{"4.6.0"},
@@ -105,23 +105,23 @@ func TestNewBlockersReporter_Triage(t *testing.T) {
 			bugMap := map[int]bugzilla.Bug{}
 			for _, b := range test.bugs {
 				bugIDs = append(bugIDs, b.ID)
-				bugMap[b.ID] = b
+				bugMap[b.ID] = *b
 			}
 			var client = &cache.FakeBugzillaClient{Fake: &bugzilla.Fake{
 				Bugs: bugMap,
 			}}
-			result := triageBug(test.target, test.bugs...)
+			result := triageBug(test.target, "Test Team", test.bugs...)
 
 			var expectedBlockers []string
 			for _, b := range test.blockerIDs {
 				bug, _ := client.GetBug(b)
-				expectedBlockers = append(expectedBlockers, bugutil.FormatBugMessage(*bug))
+				expectedBlockers = append(expectedBlockers, bugutil.FormatBugMessage(bug))
 			}
 
 			var expectedTriage []string
 			for _, b := range test.triageIDs {
 				bug, _ := client.GetBug(b)
-				expectedTriage = append(expectedTriage, bugutil.FormatBugMessage(*bug))
+				expectedTriage = append(expectedTriage, bugutil.FormatBugMessage(bug))
 			}
 
 			if !reflect.DeepEqual(result.blockers, expectedBlockers) {
