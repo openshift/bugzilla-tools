@@ -28,6 +28,10 @@ import (
 )
 
 const (
+	defaultForSubcomponentsTag = "!!DEFAULT!!"
+	ignoreTeamTag              = "!!IGNORE!!"
+
+	ignoreTeam
 	fromGithubFlagName = "data-from-github"
 
 	githubKeyFlagName   = "github-key"
@@ -46,7 +50,7 @@ const (
 	orgDataURLFlagDefVal = "http://team-exportor/teams"
 )
 
-func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string) bool {
+func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string) (isTeam, isDef bool) {
 	foundComponent := false
 	for _, component := range team.Components {
 		if componentToFind == component {
@@ -55,31 +59,39 @@ func isForTeam(team TeamInfo, componentToFind string, subcomponentToFind string)
 		}
 	}
 	if !foundComponent {
-		return false
+		return false, false
 	}
 	subcomponents, ok := team.Subcomponents[componentToFind]
 	if !ok {
 		// Team has components, but no subcomponents, so all match
-		return true
+		return true, false
+	}
+	if len(subcomponents) == 1 && subcomponents[0] == defaultForSubcomponentsTag {
+		return false, true
 	}
 	for _, subcomponent := range subcomponents {
 		if subcomponentToFind == subcomponent {
 			// both the component and the subcomponent match
-			return true
+			return true, false
 		}
 	}
 	// Nothing matches
-	return false
+	return false, false
 }
 
 func (orgData OrgData) GetTeamByComponent(component, subcomponent string) *TeamInfo {
+	var defTeam *TeamInfo
 	for i := range orgData.Teams {
 		team := orgData.Teams[i]
-		if isForTeam(team, component, subcomponent) {
+		yes, isDef := isForTeam(team, component, subcomponent)
+		if yes {
 			return &team
 		}
+		if isDef {
+			defTeam = &team
+		}
 	}
-	return nil
+	return defTeam
 }
 
 func (orgData OrgData) GetTeamName(bug *bugzilla.Bug) string {
@@ -138,14 +150,14 @@ func GetGithubAuthClient(ctx context.Context, cmd *cobra.Command) (*http.Client,
 	return tc, nil
 }
 
-func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
+func getOrgDataFromLiPath(cmd *cobra.Command, path string) (*OrgData, error) {
 	ctx := context.Background()
 	transport, err := GetGithubAuthClient(ctx, cmd)
 	if err != nil {
 		return nil, err
 	}
 	client := github.NewClient(transport)
-	file, _, _, err := client.Repositories.GetContents(ctx, "openshift", "li", "tools/shiftzilla/shiftzilla_cfg.yaml", nil)
+	file, _, _, err := client.Repositories.GetContents(ctx, "openshift", "li", path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -289,13 +301,37 @@ func getTeamSizeFromGoogleDoc(cmd *cobra.Command, orgData *OrgData) error {
 			teamInfo.MemberCount = count
 			orgData.Teams[team] = teamInfo
 		} else {
-			pretty.Printf("Unable to find teamInfo for: %s\n", team)
+			if team == "" {
+				continue
+			}
+			pretty.Printf("Team %q: Found in Team Member Tracking Google Doc but not found in shiftzilla team config.\n", team)
 		}
 	}
 
 	return nil
 }
 
+// This fetches org data from the github.com/openshift/li/tools/shiftzilla repo. That repo has most data
+// inside shiftzilla_cfg.yaml, but shiftzilla doesn't understand subcomponents. So we have a second set
+// of data which overwrites the first set and includes information about teams with subcomponents in bugzilla.
+func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
+	primaryOrgData, err := getOrgDataFromLiPath(cmd, "tools/shiftzilla/shiftzilla_cfg.yaml")
+	if err != nil {
+		return nil, err
+	}
+
+	secondaryOrgData, err := getOrgDataFromLiPath(cmd, "tools/shiftzilla/subcomponent_teams.yaml")
+	if err != nil {
+		return nil, err
+	}
+
+	if err = mergo.MergeWithOverwrite(primaryOrgData, secondaryOrgData); err != nil {
+		return nil, err
+	}
+	return primaryOrgData, nil
+}
+
+// This could actually get the data from local file (--test-data=) or from github itself.
 func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	orgData, err := getOrgDataFromFile(cmd, teamDataFlagName)
 	if err != nil && err != config.NotSetError {
@@ -323,6 +359,17 @@ func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	err = getTeamSizeFromGoogleDoc(cmd, orgData)
 	if err != nil {
 		return nil, err
+	}
+
+	toIgnore := []string{}
+	for teamName, team := range orgData.Teams {
+		if len(team.Components) == 1 && team.Components[0] == ignoreTeamTag {
+			toIgnore = append(toIgnore, teamName)
+		}
+	}
+	for _, teamName := range toIgnore {
+		fmt.Printf("Deleting: %s\n", teamName)
+		delete(orgData.Teams, teamName)
 	}
 
 	orgData.cmd = cmd
