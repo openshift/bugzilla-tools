@@ -26,6 +26,8 @@ spec:
         - mountPath: /var/run/
           name: team-overwrite
           readOnly: true
+        - mountPath: /etc/google-sheet/
+          name: gsheet-key
         ports:
         - name: web
           containerPort: 8000
@@ -36,7 +38,11 @@ spec:
         secret:
           defaultMode: 420
           secretName: github-api-key
-      - configMap:
+      - name: team-overwrite
+        configMap:
           defaultMode: 420
           name: overwrite-team-data
-        name: team-overwrite
+      - name: gsheet-key
+        secret:
+          defaultMode: 420
+          secretName: gsheet-key

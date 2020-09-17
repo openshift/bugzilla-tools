@@ -77,6 +77,8 @@ type Bug struct {
 	Priority string `json:"priority,omitempty"`
 	// Product is the name of the product this bug is in.
 	Product string `json:"product,omitempty"`
+	// PMScore is the score assigned which tries to account for many factors
+	PMScore string `json:"cf_pm_score,omitempty"`
 	// QAContact is the login name of the current QA Contact on the bug.
 	QAContact string `json:"qa_contact,omitempty"`
 	// QAContactDetail is an object containing detailed user information for the qa_contact. To see the keys included in the user detail object, see below.
@@ -231,6 +233,7 @@ type BugUpdate struct {
 	Priority      string       `json:"priority,omitempty"`
 	Severity      string       `json:"severity,omitempty"`
 	MinorUpdate   bool         `json:"minor_update,omitempty"`
+	AssignedTo    string       `json:"assigned_to,omitempty"`
 }
 
 // ExternalBug contains details about an external bug linked to a Bugzilla bug.

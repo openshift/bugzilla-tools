@@ -13,6 +13,8 @@
 /smartsheets
 /team-exportor
 /upcoming-sprint-stats
+/feature-slo-automation
+/team-slo-results
 
 # Created by https://www.gitignore.io/api/go,react
 # Edit at https://www.gitignore.io/?templates=go,react

@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: team-slo-results
+  name: team-slo-results
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-slo-results
+  template:
+    metadata:
+      labels:
+        app: team-slo-results
+    spec:
+      containers:
+      - image: quay.io/eparis/team-slo-results:latest
+        imagePullPolicy: Always
+        name: team-slo-results
+        resources: {}
+        volumeMounts:
+        - name: bugzilla-api-key
+          readOnly: true
+          mountPath: /etc/bugzilla
+        ports:
+        - name: web
+          containerPort: 8001
+          protocol: TCP
+      restartPolicy: Always
+      volumes:
+      - name: bugzilla-api-key
+        secret:
+          secretName: bugzilla-api-key
