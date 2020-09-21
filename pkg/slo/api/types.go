@@ -33,6 +33,6 @@ type TeamResult struct {
 type TeamsResults map[string]TeamResult
 
 type Data struct {
-	Count     int  `json:"count,omitempty"`
-	PerMember bool `json:"perMember,omitempty"`
+	Count     float32 `json:"count,omitempty"`
+	PerMember bool    `json:"perMember,omitempty"`
 }
