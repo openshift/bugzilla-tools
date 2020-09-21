@@ -76,9 +76,10 @@ func getCountResult(which string, bugMaps map[string]bugs.TeamMap, teamSLO map[s
 		return sloAPI.Result{}
 	}
 	current := len(bugs[team])
-	obligation := sloData.Count
+	obligation := int(sloData.Count)
 	if sloData.PerMember && teamInfo.MemberCount != 0 {
-		obligation = obligation * teamInfo.MemberCount
+		obligation32 := sloData.Count * float32(teamInfo.MemberCount)
+		obligation = int(obligation32)
 	}
 	result := sloAPI.Result{
 		Name:       which,
@@ -99,9 +100,10 @@ func getPMScoreResult(bugMap bugs.TeamMap, sloData sloAPI.Data, teamInfo teams.T
 		}
 		score += bugScore
 	}
-	obligation := sloData.Count
+	obligation := int(sloData.Count)
 	if sloData.PerMember && teamInfo.MemberCount != 0 {
-		obligation = obligation * teamInfo.MemberCount
+		obligation32 := sloData.Count * float32(teamInfo.MemberCount)
+		obligation = int(obligation32)
 	}
 	result := sloAPI.Result{
 		Name:       sloAPI.PMScore,
