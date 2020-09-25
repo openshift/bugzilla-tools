@@ -107,6 +107,10 @@ github.com/openshift/library-go/pkg/controller/factory
 github.com/openshift/library-go/pkg/controller/fileobserver
 github.com/openshift/library-go/pkg/operator/events
 github.com/openshift/library-go/pkg/operator/v1helpers
+# github.com/openshift/sippy v0.0.0-20200925184220-ce6139994b76
+## explicit
+github.com/openshift/sippy/pkg/apis/bugs/v1
+github.com/openshift/sippy/pkg/apis/sippy/v1
 # github.com/peterbourgon/diskv v2.0.1+incompatible
 github.com/peterbourgon/diskv
 # github.com/pkg/errors v0.9.1

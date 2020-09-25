@@ -18,6 +18,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/openshift/build-machinery-go v0.0.0-20200512074546-3744767c4131
 	github.com/openshift/library-go v0.0.0-20200623125929-17bb296f39b8
+	github.com/openshift/sippy v0.0.0-20200925184220-ce6139994b76
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0
