@@ -5,6 +5,7 @@ const (
 	Blocker = "blockers"
 	All     = "total"
 	PMScore = "pmscore"
+	CI      = "ci-fail-rate"
 )
 
 var (
@@ -12,6 +13,7 @@ var (
 		Urgent,
 		Blocker,
 		PMScore,
+		CI,
 		All,
 	}
 )

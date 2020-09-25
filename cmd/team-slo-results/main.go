@@ -28,9 +28,19 @@ const (
 func getTeamSLOResults(cmd *cobra.Command, orgInfo *teams.OrgData, bugData *bugs.BugData) (sloAPI.TeamsResults, error) {
 	bugMaps := slo.GetBugMaps(bugData)
 
+	currentVersion, err := slo.CurrentVersion(orgInfo.Releases)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: consider more releases?
+	ciComponentMap, err := slo.GetCiComponentMap(currentVersion)
+	if err != nil {
+		return nil, err
+	}
+
 	teamsResults := make(sloAPI.TeamsResults, len(orgInfo.Teams))
 	for team, teamInfo := range orgInfo.Teams {
-		teamsResults[team] = slo.GetTeamResult(bugMaps, orgInfo, teamInfo)
+		teamsResults[team] = slo.GetTeamResult(bugMaps, ciComponentMap, orgInfo, teamInfo)
 	}
 	return teamsResults, nil
 }
