@@ -2,9 +2,12 @@ package slo
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kr/pretty"
@@ -13,6 +16,7 @@ import (
 	"github.com/openshift/bugzilla-tools/pkg/bugs"
 	sloAPI "github.com/openshift/bugzilla-tools/pkg/slo/api"
 	"github.com/openshift/bugzilla-tools/pkg/teams"
+	sippyv1 "github.com/openshift/sippy/pkg/apis/sippy/v1"
 )
 
 const (
@@ -67,6 +71,72 @@ func GetBugMaps(bugData *bugs.BugData) map[string]bugs.TeamMap {
 	return bugMaps
 }
 
+func GetCiComponentMap(version string) (map[string]sippyv1.MinimumPassRatesByComponent, error) {
+	resp, err := http.Get(fmt.Sprintf("https://sippy.ci.openshift.org/json?release=%s", version))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
+	}
+
+	type Report map[string]struct {
+		MinimumJobPassRatesByComponent []sippyv1.MinimumPassRatesByComponent `json:"minimumJobPassRatesByComponent"`
+	}
+	var r Report
+	if err := json.Unmarshal(body, &r); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal release-%s sippy state: %v", version, err)
+	}
+
+	result := map[string]sippyv1.MinimumPassRatesByComponent{}
+	for _, c := range r[version].MinimumJobPassRatesByComponent {
+		result[c.Name] = c
+	}
+	return result, nil
+}
+
+// CurrentVersion returns the lowest x.y version that has a x.y.0 target.
+func CurrentVersion(releases map[string]teams.ReleaseInfo) (string, error) {
+	var all []string
+	var active []string
+	var order []string
+	for _, v := range releases {
+		all = append(all, v.Name)
+		onlyZ := true
+		for _, target := range v.Targets {
+			if !strings.HasSuffix(target, ".z") {
+				onlyZ = false
+				break
+			}
+		}
+		if onlyZ {
+			continue
+		}
+
+		vs := strings.Split(v.Name, ".")
+		if len(vs) < 2 {
+			continue
+		}
+		active = append(active, fmt.Sprintf("%s.%s", vs[0], vs[1]))
+		if len(vs[1]) == 1 {
+			vs[1] = "0" + vs[1]
+		}
+		order = append(order, vs[0]+vs[1])
+	}
+	if len(active) == 0 {
+		return "", fmt.Errorf("no release found that has a x.y.0 target version: %v", all)
+	}
+	sort.Slice(active, func(i, j int) bool {
+		return order[i] < order[j]
+	})
+	return active[0], nil
+}
+
 func getCountResult(which string, bugMaps map[string]bugs.TeamMap, teamSLO map[string]sloAPI.Data, teamInfo teams.TeamInfo) sloAPI.Result {
 	team := teamInfo.Name
 	sloData := teamSLO[which]
@@ -114,7 +184,27 @@ func getPMScoreResult(bugMap bugs.TeamMap, sloData sloAPI.Data, teamInfo teams.T
 	return result
 }
 
-func GetTeamResult(bugMaps map[string]bugs.TeamMap, orgData *teams.OrgData, teamInfo teams.TeamInfo) sloAPI.TeamResult {
+func getCIResult(ciComponentsMap map[string]sippyv1.MinimumPassRatesByComponent, sloData sloAPI.Data, teamInfo teams.TeamInfo) sloAPI.Result {
+	minPass := 100.0
+	for _, c := range teamInfo.Components {
+		passRate, found := ciComponentsMap[c]
+		if !found {
+			continue
+		}
+
+		if pr, ok := passRate.PassRates["latest"]; ok && pr.Percentage < minPass {
+			minPass = pr.Percentage
+		}
+	}
+	return sloAPI.Result{
+		Name:       sloAPI.CI,
+		Current:    int(100.0 - minPass),
+		Obligation: int(sloData.Count),
+		PerMember:  false,
+	}
+}
+
+func GetTeamResult(bugMaps map[string]bugs.TeamMap, ciComponentsMap map[string]sippyv1.MinimumPassRatesByComponent, orgData *teams.OrgData, teamInfo teams.TeamInfo) sloAPI.TeamResult {
 	team := teamInfo.Name
 	if teamInfo.MemberCount == 0 {
 		pretty.Printf("%s has 0 members\n", team)
@@ -148,6 +238,9 @@ func GetTeamResult(bugMaps map[string]bugs.TeamMap, orgData *teams.OrgData, team
 			bugMap := bugMaps[sloAPI.All]
 			sloData := teamSLO[sloAPI.PMScore]
 			result = getPMScoreResult(bugMap, sloData, teamInfo)
+		case sloAPI.CI:
+			sloData := teamSLO[sloAPI.CI]
+			result = getCIResult(ciComponentsMap, sloData, teamInfo)
 		default:
 			panic("Didn't know an SLO!!!")
 		}
