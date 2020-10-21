@@ -64,6 +64,8 @@ type triageResult struct {
 	needTriageIDs         []int
 	needUpcomingSprint    []string
 	needUpcomingSprintIDs []int
+	post                  []string
+	postIDs               []int
 	totalCount            int
 	staleCount            int
 	priorityCount         map[string]int
@@ -144,6 +146,10 @@ func (tr triageResult) getTeamMessages(targetRelease string) []string {
 	href = fmt.Sprintf("%d Untriaged Bugs", triageCount)
 	triageMsg := makeBugzillaLink(href, tr.needTriageIDs)
 
+	postCount := len(tr.post)
+	href = fmt.Sprintf("%d Bugs in \"POST\"", postCount)
+	postMsg := makeBugzillaLink(href, tr.postIDs)
+
 	lines := []string{
 		fmt.Sprintf("\n:bug: *Today's %s OCP Bug Report:* :bug:\n", tr.who),
 		fmt.Sprintf("> %s", allBugsMsg),
@@ -152,6 +158,7 @@ func (tr triageResult) getTeamMessages(targetRelease string) []string {
 		fmt.Sprintf("> %s", blockersMsg),
 		fmt.Sprintf("> %s", upcomingMsg),
 		fmt.Sprintf("> %s", triageMsg),
+		fmt.Sprintf("> %s", postMsg),
 	}
 
 	if tr.seriousKeywordsIDs != nil {
@@ -213,6 +220,11 @@ func triageBug(currentTargetRelease string, who string, bugs ...*bugzilla.Bug) t
 		if (targetRelease == currentTargetRelease || targetRelease == "---") && (bug.Severity != "low") {
 			r.blockers = append(r.blockers, bugutil.FormatBugMessage(bug))
 			r.blockerIDs = append(r.blockerIDs, bug.ID)
+		}
+
+		if bug.Status == "POST" {
+			r.post = append(r.post, bugutil.FormatBugMessage(bug))
+			r.postIDs = append(r.postIDs, bug.ID)
 		}
 	}
 
