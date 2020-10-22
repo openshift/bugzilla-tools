@@ -24,7 +24,7 @@ const (
 	bugDataFlagDefVal = ""
 	bugDataFlagUsage  = "Path to file containing test bug data"
 
-	CurrentRelease = "4.6.0"
+	CurrentRelease = "4.7.0"
 )
 
 type PeopleMap map[string][]*bugzilla.Bug
