@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/eparis/goSmartSheet"
 	"github.com/openshift/bugzilla-tools/pkg/bugs"
 	"github.com/openshift/bugzilla-tools/pkg/teams"
-	"github.com/eparis/goSmartSheet"
 	//"github.com/kr/pretty"
 	"github.com/spf13/cobra"
 )
@@ -26,10 +26,6 @@ const (
 	url     = "https://api.smartsheet.com/2.0"
 	sheetID = "6386356843767684" // production sheet
 	//sheetID = "298546583889796" // eparis sheet
-)
-
-var (
-	targets = []string{"---", "4.6.0"}
 )
 
 func newIntCell(column int64, val int) goSmartSheet.Cell {
@@ -62,6 +58,8 @@ func doMain(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	bugMap := bugData.GetTeamMap()
+
+	blockerBugMap := bugData.FilterBlocker().GetTeamMap()
 
 	ssToken, err := getAuthToken(cmd)
 	if err != nil {
@@ -106,7 +104,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 				continue
 			}
 			newCells := []goSmartSheet.Cell{
-				newIntCell(currentBugColumn, bugMap.CountBlocker(*teamName, targets)),
+				newIntCell(currentBugColumn, blockerBugMap.CountAll(*teamName)),
 				newIntCell(allBugColumn, bugMap.CountAll(*teamName)),
 			}
 			newRow := goSmartSheet.Row{
