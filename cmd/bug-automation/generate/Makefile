@@ -4,6 +4,6 @@ build:
 	go build ./
 
 run: build
-	./generate
+	./generate --test-bugs=$(TEST_BUGS)
 
 .PHONY: all build run

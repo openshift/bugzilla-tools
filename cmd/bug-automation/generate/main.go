@@ -14,6 +14,10 @@ import (
 	"github.com/openshift/bugzilla-tools/pkg/api"
 )
 
+var (
+	testBugs = []string{}
+)
+
 func blockerSeverity() []string {
 	return []string{
 		"unspecified",
@@ -32,12 +36,15 @@ func onEngineeringStatus() []string {
 	}
 }
 
-func bugsTargetOldZeroQuery() bugzilla.Query {
-	return bugzilla.Query{
+func allOpenStatus() []string {
+	return append(onEngineeringStatus(), "MODIFIED", "ON_QA")
+}
+
+func defaultQuery() bugzilla.Query {
+	query := bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
-		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV"},
-		TargetRelease:  []string{"4.1.0", "4.2.0", "4.3.0", "4.4.0", "4.5.0"},
+		Status:         onEngineeringStatus(),
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",
@@ -60,6 +67,17 @@ func bugsTargetOldZeroQuery() bugzilla.Query {
 		},
 		IncludeFields: []string{"id"},
 	}
+	if len(testBugs) > 0 {
+		query.BugIDs = testBugs
+		query.BugIDsType = "anyexact"
+	}
+	return query
+}
+
+func bugsTargetOldZeroQuery() bugzilla.Query {
+	query := defaultQuery()
+	query.TargetRelease = []string{"4.1.0", "4.2.0", "4.3.0", "4.4.0", "4.5.0", "4.6.0"}
+	return query
 }
 
 func bugsTargetOldZeroUpdate() bugzilla.BugUpdate {
@@ -73,23 +91,11 @@ func bugsTargetOldZeroUpdate() bugzilla.BugUpdate {
 }
 
 func bugsWithUpcomingSprintQuery() bugzilla.Query {
-	return bugzilla.Query{
-		Classification: []string{"Red Hat"},
-		Product:        []string{"OpenShift Container Platform"},
-		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED", "ON_QA"},
-		//Severity:       blockerSeverity(),
-		Keywords:     []string{"UpcomingSprint"},
-		KeywordsType: "allwords",
-		Advanced: []bugzilla.AdvancedQuery{
-			{
-				Field:  "component",
-				Op:     "equals",
-				Value:  "Documentation",
-				Negate: true,
-			},
-		},
-		IncludeFields: []string{"id"},
-	}
+	query := defaultQuery()
+	query.Status = allOpenStatus()
+	query.Keywords = []string{"UpcomingSprint"}
+	query.KeywordsType = "allwords"
+	return query
 }
 
 func bugsWithUpcomingSprintUpdate() bugzilla.BugUpdate {
@@ -102,38 +108,27 @@ func bugsWithUpcomingSprintUpdate() bugzilla.BugUpdate {
 }
 
 func bugsWithoutZQuery() bugzilla.Query {
-	return bugzilla.Query{
-		Classification: []string{"Red Hat"},
-		Product:        []string{"OpenShift Container Platform"},
-		Status:         onEngineeringStatus(),
-		//Severity:       blockerSeverity(),
-		Keywords:     []string{"Security"},
-		KeywordsType: "nowords",
-		Advanced: []bugzilla.AdvancedQuery{
-			{
-				Field: "dependson",
-				Op:    "isempty",
-			},
-			{
-				Field: "target_release",
-				Op:    "regexp",
-				Value: `^4\.[0-9]+\.z$`,
-			},
-			{
-				Field:  "component",
-				Op:     "equals",
-				Value:  "Documentation",
-				Negate: true,
-			},
-			{
-				Field:  "component",
-				Op:     "equals",
-				Value:  "Release",
-				Negate: true,
-			},
+	query := defaultQuery()
+	query.Keywords = []string{"Security"}
+	query.KeywordsType = "nowords"
+	query.Advanced = append(query.Advanced, []bugzilla.AdvancedQuery{
+		{
+			Field: "dependson",
+			Op:    "isempty",
 		},
-		IncludeFields: []string{"status", "summary", "target_release", "id", "sub_components"},
-	}
+		{
+			Field: "target_release",
+			Op:    "regexp",
+			Value: `^4\.[0-9]+\.z$`,
+		},
+		{
+			Field:  "component",
+			Op:     "equals",
+			Value:  "Release",
+			Negate: true,
+		},
+	}...)
+	return query
 }
 
 func bugsWithoutZUpdate() bugzilla.BugUpdate {
@@ -150,27 +145,15 @@ Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in
 }
 
 func targetReleaseWithoutSeverityQuery() bugzilla.Query {
-	return bugzilla.Query{
-		Classification: []string{"Red Hat"},
-		Product:        []string{"OpenShift Container Platform"},
-		Status:         onEngineeringStatus(),
-		Severity:       []string{"unspecified"},
-		Advanced: []bugzilla.AdvancedQuery{
-			{
-				Field:  "component",
-				Op:     "equals",
-				Value:  "Documentation",
-				Negate: true,
-			},
-			{
-				Field:  "target_release",
-				Op:     "equals",
-				Value:  "---",
-				Negate: true,
-			},
-		},
-		IncludeFields: []string{"id"},
-	}
+	query := defaultQuery()
+	query.Severity = []string{"unspecified"}
+	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
+		Field:  "target_release",
+		Op:     "equals",
+		Value:  "---",
+		Negate: true,
+	})
+	return query
 }
 
 func targetReleaseWithoutSeverityUpdate() bugzilla.BugUpdate {
@@ -183,69 +166,143 @@ func targetReleaseWithoutSeverityUpdate() bugzilla.BugUpdate {
 	}
 }
 
+func needsBlockerFlagQuery() bugzilla.Query {
+	query := defaultQuery()
+	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
+		Field:  "flagtypes.name",
+		Op:     "substring",
+		Value:  "blocker",
+		Negate: true,
+	})
+	return query
+}
+
+func bugsNeedBlockerFlagSeverityQuery() bugzilla.Query {
+	query := needsBlockerFlagQuery()
+	query.Severity = []string{"high", "urgent"}
+	return query
+}
+
+func bugsNeedBlockerFlagPriorityQuery() bugzilla.Query {
+	query := needsBlockerFlagQuery()
+	query.Priority = []string{"high", "urgent"}
+	return query
+}
+
+func bugsNeedBlockerFlagAction() bugzilla.BugUpdate {
+	return bugzilla.BugUpdate{
+		Flags: []bugzilla.FlagChange{
+			{
+				Name:   "blocker",
+				Status: "?",
+			},
+		},
+		MinorUpdate: true,
+	}
+
+}
+
+func blockerPlusWithoutTargetReleaseQuery() bugzilla.Query {
+	query := defaultQuery()
+	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
+		Field: "flagtypes.name",
+		Op:    "substring",
+		Value: "blocker+",
+	})
+	query.TargetRelease = []string{"---"}
+	return query
+}
+
+func blockerPlusWithoutTargetReleaseAction() bugzilla.BugUpdate {
+	update := bugsNeedBlockerFlagAction()
+	update.MinorUpdate = false
+	update.Comment = &bugzilla.BugComment{
+		Private: true,
+		Body: `This bug sets Target Release equal to a z-stream but has no bug in the 'Depends On' field. As such this is not a valid bug state and the target release is being unset.
+
+Any bug targeting 4.1.z must have a bug targeting 4.2 in 'Depends On.'
+Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in 'Depends On.'`,
+	}
+	return update
+}
+
 func noUpdate() bugzilla.BugUpdate {
 	return bugzilla.BugUpdate{}
 }
 
-func getAction(name string, desc string, def bool, query bugzilla.Query, update bugzilla.BugUpdate) string {
-	bugAction := api.BugAction{
-		Default:     def,
-		Name:        name,
-		Description: desc,
-		Query:       query,
-		Update:      update,
-	}
+type Action api.BugAction
 
-	out, err := yaml.Marshal(&bugAction)
+func (a *Action) yaml() string {
+	out, err := yaml.Marshal(a)
 	if err != nil {
 		return ""
 	}
 	return string(out)
 }
 
+func (a Action) write() error {
+	actionYaml := a.yaml()
+	filename := fmt.Sprintf("../operations/%s.yaml", a.Name)
+	return ioutil.WriteFile(filename, []byte(actionYaml), 0644)
+}
+
 func doGenerate() error {
-	name := "targetReleaseWithoutSeverity"
-	desc := "Bugs Setting Target Release Without Severity Set"
-	query := targetReleaseWithoutSeverityQuery()
-	update := targetReleaseWithoutSeverityUpdate()
-	action := getAction(name, desc, true, query, update)
-	filename := fmt.Sprintf("../operations/%s.yaml", name)
-	err := ioutil.WriteFile(filename, []byte(action), 0644)
-	if err != nil {
-		return err
+	actions := []Action{
+		{
+			Name:        "targetReleaseWithoutSeverity",
+			Description: "Bugs Setting Target Release Without Severity Set",
+			Query:       targetReleaseWithoutSeverityQuery(),
+			Update:      targetReleaseWithoutSeverityUpdate(),
+			Default:     true,
+		},
+		{
+			Name:        "zNoDepends",
+			Description: "Z-Stream Bugs With No Depends On",
+			Query:       bugsWithoutZQuery(),
+			Update:      bugsWithoutZUpdate(),
+			Default:     true,
+		},
+		{
+			Name:        "removeUpcomingSprint",
+			Description: "Remove UpcomingSprint from all bugs",
+			Query:       bugsWithUpcomingSprintQuery(),
+			Update:      bugsWithUpcomingSprintUpdate(),
+			Default:     false,
+		},
+		{
+			Name:        "bugsTargetOldZero",
+			Description: "Open bugs which target closed releases",
+			Query:       bugsTargetOldZeroQuery(),
+			Update:      bugsTargetOldZeroUpdate(),
+			Default:     true,
+		},
+		{
+			Name:        "bugsNeedBlockerFlagSeverity",
+			Description: "All bugs that should have at least blocker? based on the severity",
+			Query:       bugsNeedBlockerFlagSeverityQuery(),
+			Update:      bugsNeedBlockerFlagAction(),
+			Default:     true,
+		},
+		{
+			Name:        "bugsNeedBlockerFlagPriority",
+			Description: "All bugs that should have at least blocker? based on the priority",
+			Query:       bugsNeedBlockerFlagPriorityQuery(),
+			Update:      bugsNeedBlockerFlagAction(),
+			Default:     true,
+		},
+		{
+			Name:        "blockerPlusWithoutTargetRelease",
+			Description: "All bugs that set blocker+ must also set a TargetRelease",
+			Query:       blockerPlusWithoutTargetReleaseQuery(),
+			Update:      blockerPlusWithoutTargetReleaseAction(),
+			Default:     true,
+		},
 	}
 
-	name = "zNoDepends"
-	desc = "Z-Stream Bugs With No Depends On"
-	query = bugsWithoutZQuery()
-	update = bugsWithoutZUpdate()
-	action = getAction(name, desc, true, query, update)
-	filename = fmt.Sprintf("../operations/%s.yaml", name)
-	err = ioutil.WriteFile(filename, []byte(action), 0644)
-	if err != nil {
-		return err
-	}
-
-	name = "removeUpcomingSprint"
-	desc = "Remove UpcomingSprint from all bugs"
-	query = bugsWithUpcomingSprintQuery()
-	update = bugsWithUpcomingSprintUpdate()
-	action = getAction(name, desc, false, query, update)
-	filename = fmt.Sprintf("../operations/%s.yaml", name)
-	err = ioutil.WriteFile(filename, []byte(action), 0644)
-	if err != nil {
-		return err
-	}
-
-	name = "bugsTargetOldZero"
-	desc = "Open bugs which target closed releases"
-	query = bugsTargetOldZeroQuery()
-	update = bugsTargetOldZeroUpdate()
-	action = getAction(name, desc, true, query, update)
-	filename = fmt.Sprintf("../operations/%s.yaml", name)
-	err = ioutil.WriteFile(filename, []byte(action), 0644)
-	if err != nil {
-		return err
+	for _, action := range actions {
+		if err := action.write(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -254,7 +311,7 @@ func doGenerate() error {
 func main() {
 	cmd := &cobra.Command{
 		Use: filepath.Base(os.Args[0]),
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := doGenerate()
 			if err != nil {
 				return err
@@ -263,6 +320,7 @@ func main() {
 		},
 	}
 	cmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
+	cmd.Flags().StringSliceVar(&testBugs, "test-bugs", testBugs, "Limit queries to only these specific bugs (CSV)")
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
