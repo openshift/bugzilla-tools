@@ -296,6 +296,7 @@ type Query struct {
 	Classification []string        `json:"classification,omitempty"`
 	Product        []string        `json:"product,omitempty"`
 	Status         []string        `json:"status,omitempty"`
+	Priority       []string        `json:"priority,omitempty"`
 	Severity       []string        `json:"severity,omitempty"`
 	Keywords       []string        `json:"keywords,omitempty"`
 	KeywordsType   string          `json:"keywords_type,omitempty"`
