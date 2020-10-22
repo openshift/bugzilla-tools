@@ -27,6 +27,10 @@ const (
 	CurrentRelease = "4.7.0"
 )
 
+var (
+	CurrentReleaseTargets = []string{"---", CurrentRelease}
+)
+
 type PeopleMap map[string][]*bugzilla.Bug
 
 type TeamMap map[string][]*bugzilla.Bug
@@ -79,25 +83,6 @@ func (b TeamMap) CountTargetRelease(team string, targets []string) int {
 	count := 0
 	for _, bug := range b[team] {
 		targetRelease := bug.TargetRelease
-		for _, target := range targets {
-			if targetRelease[0] == target {
-				count += 1
-				break
-			}
-		}
-	}
-	return count
-}
-
-func (b TeamMap) CountBlocker(team string, targets []string) int {
-	count := 0
-	for _, bug := range b[team] {
-		targetRelease := bug.TargetRelease
-		severity := bug.Severity
-
-		if severity == "low" {
-			continue
-		}
 		for _, target := range targets {
 			if targetRelease[0] == target {
 				count += 1
