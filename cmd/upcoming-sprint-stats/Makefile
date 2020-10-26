@@ -4,7 +4,7 @@ build:
 	go build ./
 
 run: build
-	./$(NAME)  --data-from-github --overwrite-team-data=overwriteTeamData.yml
+	./$(NAME) --org-data-url=http://localhost:8000/teams
 
 apply-config: container-push
 	oc create secret generic bugzilla-api-key --from-file=bugzillaKey --dry-run=client -o yaml | oc apply -f -

@@ -4,7 +4,10 @@ build:
 	go build ./
 
 run: build
-	./$(NAME)
+	./$(NAME) --org-data-url=http://localhost:8000/teams
+
+save-bug-data: build
+	./$(NAME) --org-data-url=http://localhost:8000/teams > testBugData
 
 container: build
 	podman build -t quay.io/$(USER)/$(NAME):latest .
