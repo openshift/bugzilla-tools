@@ -1,6 +1,6 @@
 default: true
-description: Z-Stream Bugs With No Depends On
-name: zNoDepends
+description: All bugs that set blocker+ must also set a TargetRelease
+name: blockerPlusWithoutTargetRelease
 query:
   advanced:
   - field: component
@@ -15,22 +15,13 @@ query:
     negate: true
     op: equals
     value: odo
-  - field: dependson
-    op: isempty
-  - field: target_release
-    op: regexp
-    value: ^4\.[0-9]+\.z$
-  - field: component
-    negate: true
-    op: equals
-    value: Release
+  - field: flagtypes.name
+    op: substring
+    value: blocker+
   classification:
   - Red Hat
   include_fields:
   - id
-  keywords:
-  - Security
-  keywords_type: nowords
   product:
   - OpenShift Container Platform
   status:
@@ -38,6 +29,8 @@ query:
   - ASSIGNED
   - POST
   - ON_DEV
+  target_release:
+  - '---'
 update:
   comment:
     body: |-
@@ -46,4 +39,6 @@ update:
       Any bug targeting 4.1.z must have a bug targeting 4.2 in 'Depends On.'
       Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in 'Depends On.'
     is_private: true
-  target_release: '---'
+  flags:
+  - name: blocker
+    status: '?'

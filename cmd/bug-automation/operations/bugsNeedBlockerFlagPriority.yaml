@@ -1,6 +1,6 @@
-default: false
-description: Remove UpcomingSprint from all bugs
-name: removeUpcomingSprint
+default: true
+description: All bugs that should have at least blocker? based on the priority
+name: bugsNeedBlockerFlagPriority
 query:
   advanced:
   - field: component
@@ -15,13 +15,17 @@ query:
     negate: true
     op: equals
     value: odo
+  - field: flagtypes.name
+    negate: true
+    op: substring
+    value: blocker
   classification:
   - Red Hat
   include_fields:
   - id
-  keywords:
-  - UpcomingSprint
-  keywords_type: allwords
+  priority:
+  - high
+  - urgent
   product:
   - OpenShift Container Platform
   status:
@@ -29,10 +33,8 @@ query:
   - ASSIGNED
   - POST
   - ON_DEV
-  - MODIFIED
-  - ON_QA
 update:
-  keywords:
-    remove:
-    - UpcomingSprint
+  flags:
+  - name: blocker
+    status: '?'
   minor_update: true

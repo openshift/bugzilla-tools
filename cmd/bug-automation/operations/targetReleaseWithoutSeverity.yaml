@@ -7,6 +7,14 @@ query:
     negate: true
     op: equals
     value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Migration Tooling
+  - field: component
+    negate: true
+    op: equals
+    value: odo
   - field: target_release
     negate: true
     op: equals

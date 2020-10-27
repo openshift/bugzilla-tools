@@ -1,4 +1,5 @@
-NAME=bug-automation
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+NAME := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 build:
 	go build ./
