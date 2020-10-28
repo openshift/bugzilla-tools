@@ -53,6 +53,7 @@ func main() {
 	slack.AddFlags(cmd)
 	bugs.AddFlags(cmd)
 	teams.AddFlags(cmd)
+	cmd.Flags().Bool("debug", false, "Run in debug mode sending all messages to the debug channel")
 
 	if v := version.Get().String(); len(v) == 0 {
 		cmd.Version = "<unknown>"

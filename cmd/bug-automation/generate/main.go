@@ -12,20 +12,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/openshift/bugzilla-tools/pkg/api"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
 )
 
 var (
 	testBugs = []string{}
 )
-
-func blockerSeverity() []string {
-	return []string{
-		"unspecified",
-		"urgent",
-		"high",
-		"medium",
-	}
-}
 
 func onEngineeringStatus() []string {
 	return []string{
@@ -171,7 +163,7 @@ func needsBlockerFlagQuery() bugzilla.Query {
 	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
 		Field:  "flagtypes.name",
 		Op:     "substring",
-		Value:  "blocker",
+		Value:  bugs.BlockerFlagName,
 		Negate: true,
 	})
 	return query
@@ -193,8 +185,8 @@ func bugsNeedBlockerFlagAction() bugzilla.BugUpdate {
 	return bugzilla.BugUpdate{
 		Flags: []bugzilla.FlagChange{
 			{
-				Name:   "blocker",
-				Status: "?",
+				Name:   bugs.BlockerFlagName,
+				Status: bugs.BlockerFlagRequested,
 			},
 		},
 		MinorUpdate: true,
@@ -207,7 +199,7 @@ func blockerPlusWithoutTargetReleaseQuery() bugzilla.Query {
 	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
 		Field: "flagtypes.name",
 		Op:    "substring",
-		Value: "blocker+",
+		Value: bugs.BlockerFlagName + bugs.BlockerFlagTrue,
 	})
 	query.TargetRelease = []string{"---"}
 	return query

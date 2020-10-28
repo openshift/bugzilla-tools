@@ -5,7 +5,7 @@ build:
 	go build ./
 
 run: build
-	./$(NAME) --overwrite-team-data=overwriteTeamData.yml --data-from-github
+	./$(NAME) --debug --org-data-url=http://localhost:8000/teams
 
 apply-manifest: container-push
 	oc create secret generic slack-key --from-file=slackKey --dry-run=client -o yaml | oc apply -f -

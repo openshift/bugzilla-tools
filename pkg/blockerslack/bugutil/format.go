@@ -5,12 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eparis/bugzilla"
-
 	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
+	"github.com/openshift/bugzilla-tools/pkg/bugs"
 )
 
-func GetBugURL(b *bugzilla.Bug) string {
+func GetBugURL(b *bugs.Bug) string {
 	return fmt.Sprintf("<https://bugzilla.redhat.com/show_bug.cgi?id=%d|#%d>", b.ID, b.ID)
 }
 
@@ -37,7 +36,7 @@ func BugCountPlural(c int, capitalize bool) string {
 	return fmt.Sprintf("%d %s", c, out)
 }
 
-func FormatBugMessage(b *bugzilla.Bug) string {
+func FormatBugMessage(b *bugs.Bug) string {
 	format := func(priority string) string {
 		switch priority {
 		case "urgent":
