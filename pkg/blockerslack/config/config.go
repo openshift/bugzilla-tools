@@ -25,6 +25,11 @@ func GetConfig(cmd *cobra.Command, ctx context.Context) (*OperatorConfig, error)
 	if err != nil {
 		return nil, err
 	}
+	debug, err := cmd.Flags().GetBool("debug")
+	if err != nil {
+		return nil, err
+	}
+	c.Debug = c.Debug || debug
 	return c, nil
 }
 

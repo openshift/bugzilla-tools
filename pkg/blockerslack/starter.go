@@ -40,7 +40,9 @@ func Run(ctx context.Context, cfg config.OperatorConfig, cmd *cobra.Command) err
 
 	schedule := []string{
 		"CRON_TZ=America/New_York 0 7 * * 1-5",
-		//"* * * * *",
+	}
+	if cfg.Debug {
+		schedule[0] = "* * * * *"
 	}
 	blockerReporter := blockers.NewBlockersReporter(schedule, cfg, bugData, orgData, slackChannelClient, recorder)
 

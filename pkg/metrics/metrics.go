@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/openshift/bugzilla-tools/pkg/bugs"
-	"github.com/eparis/bugzilla"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -15,7 +14,7 @@ var (
 	lastGauges = map[int]prometheus.Labels{}
 )
 
-func labelsFromBug(bug *bugzilla.Bug, team string) prometheus.Labels {
+func labelsFromBug(bug *bugs.Bug, team string) prometheus.Labels {
 	return prometheus.Labels{
 		"team":           team,
 		"id":             fmt.Sprintf("%d", bug.ID),
