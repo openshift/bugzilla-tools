@@ -99,6 +99,34 @@ func (tr triageResult) getPersonalMessages() []string {
 	return messages
 }
 
+// Slack has a semi-undocumented limit of about 4000 characters per message.
+// https://api.slack.com/changelog/2018-04-truncating-really-long-messages
+// Over 4k they will just split it, which is ok except it breaks links, so we break
+// it ourselves. If we end up with a single line longer than 4k well, that sucks, get
+// fewer bugs and let slack split it and it'll look gross. Not that big of a deal.
+func joinMessages(in []string) []string {
+	out := []string{}
+
+	cur := []string{}
+	curLen := 0
+
+	for _, line := range in {
+		lineLen := len(line)
+		if curLen+lineLen < 4000 {
+			cur = append(cur, line)
+			curLen += lineLen
+			continue
+		}
+		text := strings.Join(cur, "\n")
+		out = append(out, text)
+		cur = []string{line}
+		curLen = lineLen
+	}
+	text := strings.Join(cur, "\n")
+	out = append(out, text)
+	return out
+}
+
 func (tr triageResult) getTeamMessages() []string {
 	sortedPrioNames := []string{
 		"urgent",
@@ -174,6 +202,7 @@ func (tr triageResult) getTeamMessages() []string {
 			}
 		}
 	}
+	lines = joinMessages(lines)
 
 	return lines
 }
@@ -279,9 +308,10 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		notSentToTeam.Delete(team)
 		sentToTeam = append(sentToTeam, team)
 		messages := results.getTeamMessages()
-		message := strings.Join(messages, "\n")
-		if err := c.slackClient.MessageChannel(slackChan, message); err != nil {
-			syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver stats to channel %q: %v", slackChan, err)
+		for _, message := range messages {
+			if err := c.slackClient.MessageChannel(slackChan, message); err != nil {
+				syncCtx.Recorder().Warningf("DeliveryFailed", "Failed to deliver stats to channel %q: %v", slackChan, err)
+			}
 		}
 	}
 
