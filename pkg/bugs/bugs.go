@@ -74,9 +74,6 @@ func (b Bug) BlockerRequested() bool {
 }
 
 func (b Bug) Untriaged() bool {
-	if b.Status == "NEW" {
-		return true
-	}
 	if b.Severity == "---" {
 		return true
 	}
