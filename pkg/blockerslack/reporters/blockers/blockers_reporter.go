@@ -64,6 +64,7 @@ type triageResult struct {
 	needTriage            []string
 	needTriageIDs         []int
 	needUpcomingSprintIDs []int
+	newIDs                []int
 	postIDs               []int
 	nonLowIDs             []int
 	totalCount            int
@@ -167,6 +168,10 @@ func (tr triageResult) getTeamMessages() []string {
 	href = fmt.Sprintf("%d Untriaged Bugs", triageCount)
 	triageMsg := makeBugzillaLink(href, tr.needTriageIDs)
 
+	newCount := len(tr.newIDs)
+	href = fmt.Sprintf("%d Bugs in \"NEW\"", newCount)
+	newMsg := href
+
 	postCount := len(tr.postIDs)
 	href = fmt.Sprintf("%d Bugs in \"POST\"", postCount)
 	postMsg := makeBugzillaLink(href, tr.postIDs)
@@ -190,6 +195,9 @@ func (tr triageResult) getTeamMessages() []string {
 	}
 	if triageCount > 0 {
 		lines = append(lines, fmt.Sprintf("> %s", triageMsg))
+	}
+	if newCount > 0 {
+		lines = append(lines, fmt.Sprintf("> %s", newMsg))
 	}
 	if postCount > 0 {
 		lines = append(lines, fmt.Sprintf("> %s", postMsg))
@@ -249,6 +257,10 @@ func triageBug(who string, bugs ...*bugs.Bug) triageResult {
 		if bug.Blocker() {
 			r.blockers = append(r.blockers, bugutil.FormatBugMessage(bug))
 			r.blockerIDs = append(r.blockerIDs, bug.ID)
+		}
+
+		if bug.Status == "NEW" {
+			r.newIDs = append(r.newIDs, bug.ID)
 		}
 
 		if bug.Status == "POST" {
