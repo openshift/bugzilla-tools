@@ -15,6 +15,7 @@ import (
 	"github.com/openshift/bugzilla-tools/pkg/blockerslack/config"
 	"github.com/openshift/bugzilla-tools/pkg/bugs"
 	"github.com/openshift/bugzilla-tools/pkg/teams"
+
 	//"github.com/openshift/bugzilla-tools/pkg/cache"
 	"github.com/openshift/bugzilla-tools/pkg/slack"
 )
@@ -32,7 +33,7 @@ const (
 	assigneeHrefFmt = "%d bugs assigned to %s"
 
 	blockerMsgFmt = "It seems there are %s and these bugs are *release blockers*:\nPlease keep eyes on these today!\n"
-	triageMsgFmt  = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Priority_ field set, they are not _NEW_, and do not have the _blocker?_ flag so I can stop bothering you :-)\n"
+	triageMsgFmt  = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Priority_ field set and do not have the _blocker?_ flag so I can stop bothering you :-)\n"
 	//upcomingSprintMsgFmt = "There are %s which do not have _UpcomingSprint_.\nPlease apply this keyword if the bug will not be resolved during this sprint\n"
 )
 
