@@ -1,0 +1,37 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: docker-multistage
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+  name: team-slo-results
+  labels:
+    app: team-slo-results
+    app.kubernetes.io/component: team-slo-results
+    app.kubernetes.io/instance: team-slo-results
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'team-slo-results:latest'
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1.5G
+    limits:
+      cpu: '2'
+      memory: 1.5G
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfiles/Dockerfile.team-slo-results
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/eparis/bugzilla-tools.git'
+      ref: docker-multistage
+    contextDir: /
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial

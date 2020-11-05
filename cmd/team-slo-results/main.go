@@ -60,7 +60,7 @@ func serveHTTP(errs chan error, serveResults *sloAPI.TeamsResults) {
 	mux.Handle("/teams", GetTeamHandler(serveResults))
 	mux.Handle("/metrics", promhttp.Handler())
 
-	staticHandler := http.FileServer(http.Dir("./create-react-app-with-typescript/build/"))
+	staticHandler := http.FileServer(http.Dir("./web/build/"))
 	mux.Handle("/", staticHandler)
 
 	listenAt := fmt.Sprintf(":%s", port)

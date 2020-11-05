@@ -38,7 +38,7 @@ interface SLOResult {
 }
 
 // struct2ts:github.com/openshift/bugzilla-tools/pkg/slo/api.TeamResult
-interface TeamResult {
+interface TeamResultInterface {
   name: string;
   failing: boolean;
   members: number;
@@ -118,7 +118,7 @@ interface AllTeamsProps {
 interface AllTeamsState {
   error?: any;
   isLoaded?: boolean;
-  items: { [key: string]: TeamResult };
+  items: { [key: string]: TeamResultInterface };
   classes: any;
 }
 

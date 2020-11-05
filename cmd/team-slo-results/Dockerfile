@@ -4,5 +4,5 @@ RUN microdnf update -y && microdnf clean all
 COPY team-slo-results /team-slo-results
 RUN chmod +x /team-slo-results
 
-COPY create-react-app-with-typescript/build /create-react-app-with-typescript/build
+COPY web/build /web/build
 CMD /team-slo-results --bugzilla-key=/etc/bugzilla/bugzillaKey

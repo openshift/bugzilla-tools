@@ -1,8 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"team-slo-results:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"team-slo-results\")].image","pause":"false"}]
   labels:
     app: team-slo-results
+    app.kubernetes.io/component: team-slo-results
+    app.kubernetes.io/instance: team-slo-results
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
   name: team-slo-results
 spec:
   replicas: 1
@@ -15,7 +23,7 @@ spec:
         app: team-slo-results
     spec:
       containers:
-      - image: quay.io/eparis/team-slo-results:latest
+      - image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/team-slo-results:latest
         imagePullPolicy: Always
         name: team-slo-results
         resources: {}
