@@ -2,7 +2,7 @@ kind: BuildConfig
 apiVersion: build.openshift.io/v1
 metadata:
   annotations:
-    app.openshift.io/vcs-ref: docker-multistage
+    app.openshift.io/vcs-ref: main
     app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
   name: redirect
   labels:
@@ -22,9 +22,11 @@ spec:
   source:
     type: Git
     git:
-      uri: 'https://github.com/eparis/bugzilla-tools.git'
-      ref: docker-multistage
+      uri: 'https://github.com/openshift/bugzilla-tools.git'
+      ref: main
     contextDir: /
   triggers:
     - type: ConfigChange
   runPolicy: Serial
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 2

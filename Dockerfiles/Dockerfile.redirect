@@ -1,4 +1,4 @@
-FROM golang:buster AS builder
+FROM registry.access.redhat.com/ubi8/go-toolset AS builder
 ENV CMD=redirect
 ENV GOPATH=/go
 ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
