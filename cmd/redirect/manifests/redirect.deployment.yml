@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"redirect:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"redirect\")].image","pause":"false"}]
+  labels:
+    app: redirect
+    app.kubernetes.io/component: redirect
+    app.kubernetes.io/instance: redirect
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+  name: redirect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redirect
+  template:
+    metadata:
+      labels:
+        app: redirect
+    spec:
+      containers:
+      - image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/redirect:latest
+        imagePullPolicy: Always
+        name: redirect
+        resources: {}
+        volumeMounts:
+        - name: bugzilla-api-key
+          readOnly: true
+          mountPath: /etc/bugzilla
+        ports:
+        - name: web
+          containerPort: 8001
+          protocol: TCP
+      restartPolicy: Always
+      volumes:
+      - name: bugzilla-api-key
+        secret:
+          secretName: bugzilla-api-key

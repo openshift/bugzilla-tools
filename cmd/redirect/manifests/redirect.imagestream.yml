@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: redirect
+  labels:
+    app: redirect
+    app.kubernetes.io/component: redirect
+    app.kubernetes.io/instance: redirect
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
