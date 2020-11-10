@@ -45,5 +45,5 @@ spec:
               imagePullPolicy: Always
           restartPolicy: OnFailure
           serviceAccountName: git-build-watcher
-  successfulJobsHistoryLimit: 3
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
