@@ -1,4 +1,4 @@
-FROM golang:buster AS builder
+FROM registry.access.redhat.com/ubi8/go-toolset AS builder
 ENV CMD=team-slo-results
 ENV GOPATH=/go
 ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
@@ -10,7 +10,7 @@ WORKDIR ${CMDDIR}
 RUN make build
 
 
-FROM node:buster AS node-builder
+FROM registry.access.redhat.com/ubi8/nodejs-14 AS node-builder
 ENV CMD=team-slo-results
 ENV GOPATH=/go
 ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/

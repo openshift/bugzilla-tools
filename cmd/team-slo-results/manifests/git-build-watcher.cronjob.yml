@@ -1,0 +1,49 @@
+kind: CronJob
+apiVersion: batch/v1beta1
+metadata:
+  name: team-slo-results-git-build-watcher
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"git-build-watcher:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"team-slo-results-git-build-watcher\")].image","pause":"false"}]
+  labels:
+    app: team-slo-results-git-build-watcher
+    app.kubernetes.io/component: team-slo-results-git-build-watcher
+    app.kubernetes.io/instance: team-slo-results-git-build-watcher
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  concurrencyPolicy: Forbid
+  schedule: '*/5 * * * *'
+  jobTemplate:
+    metadata:
+      labels:
+        app: team-slo-results-git-build-watcher
+        app.kubernetes.io/component: team-slo-results-git-build-watcher
+        app.kubernetes.io/instance: team-slo-results-git-build-watcher
+        app.kubernetes.io/part-of: openshift-bugzilla-tools
+    spec:
+      template:
+        spec:
+          containers:
+            - name: team-slo-results-git-build-watcher
+              image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/git-build-watcher:latest
+              command:
+                - /git-build-watcher
+                - -v=2
+                - team-slo-results
+              resources:
+                requests:
+                  memory: "50Mi"
+                  cpu: "10m"
+                limits:
+                  memory: "50Mi"
+                  cpu: "10m"
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: Always
+          restartPolicy: OnFailure
+          serviceAccountName: git-build-watcher
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

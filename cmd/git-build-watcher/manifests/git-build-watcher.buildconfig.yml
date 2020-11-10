@@ -1,0 +1,32 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: main
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+  name: git-build-watcher
+  labels:
+    app: git-build-watcher
+    app.kubernetes.io/component: git-build-watcher
+    app.kubernetes.io/instance: git-build-watcher
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'git-build-watcher:latest'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfiles/Dockerfile.git-build-watcher
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/bugzilla-tools.git'
+      ref: main
+    contextDir: /
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 2
