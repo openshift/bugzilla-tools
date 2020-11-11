@@ -4,28 +4,21 @@ metadata:
   annotations:
     app.openshift.io/vcs-ref: main
     app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
-  name: team-slo-results
+  name: blocker-slack
   labels:
-    app: team-slo-results
-    app.kubernetes.io/component: team-slo-results
-    app.kubernetes.io/instance: team-slo-results
+    app: blocker-slack
+    app.kubernetes.io/component: blocker-slack
+    app.kubernetes.io/instance: blocker-slack
     app.kubernetes.io/part-of: openshift-bugzilla-tools
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'team-slo-results:latest'
-  resources:
-    requests:
-      cpu: 500m
-      memory: 1.5G
-    limits:
-      cpu: '2'
-      memory: 1.5G
+      name: 'blocker-slack:latest'
   strategy:
     type: Docker
     dockerStrategy:
-      dockerfilePath: Dockerfiles/Dockerfile.team-slo-results
+      dockerfilePath: Dockerfiles/Dockerfile.blocker-slack
   source:
     type: Git
     git:
@@ -34,6 +27,13 @@ spec:
     contextDir: /
   triggers:
     - type: ConfigChange
+  resources:
+    requests:
+      cpu: '1'
+      memory: 2G
+    limits:
+      cpu: '1.5'
+      memory: 2G
   runPolicy: Serial
   successfulBuildsHistoryLimit: 1
   failedBuildsHistoryLimit: 1
