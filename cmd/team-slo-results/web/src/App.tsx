@@ -134,7 +134,7 @@ class AllTeams extends React.Component<AllTeamsProps, AllTeamsState> {
   }
 
   componentDidMount() {
-    fetch("https://team-slo-results-ocp-eng-architects.apps.ocp.prod.psi.redhat.com/teams")
+    fetch("https://team-slo-results-ocp-eng-architects.apps.ocp4.prod.psi.redhat.com/teams")
       .then(res => res.json())
       .then(
         result => {
