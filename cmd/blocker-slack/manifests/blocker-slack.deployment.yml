@@ -1,9 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: blocker-slack
+  annotations:
+    app.openshift.io/vcs-ref: main
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"blocker-slack:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"blocker-slack\")].image","pause":"false"}]
   labels:
     app: blocker-slack
-  name: blocker-slack
+    app.kubernetes.io/component: blocker-slack
+    app.kubernetes.io/instance: blocker-slack
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
 spec:
   replicas: 1
   selector:
@@ -15,7 +23,7 @@ spec:
         app: blocker-slack
     spec:
       containers:
-      - image: quay.io/eparis/blocker-slack:latest
+      - image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/blocker-slack:latest
         imagePullPolicy: Always
         name: blocker-slack
         resources: {}
