@@ -6,6 +6,9 @@ build:
 run: build
 	./$(NAME) --org-data-url=http://localhost:8000/teams
 
+run-local: build
+	./$(NAME) --org-data-url=http://localhost:8000/teams --test-bug-data=testBugData
+
 apply-config: container-push
 	oc create secret generic bugzilla-api-key --from-file=bugzillaKey --dry-run=client -o yaml | oc apply -f -
 	oc apply -f deployment/$(NAME).cronjob.yml
