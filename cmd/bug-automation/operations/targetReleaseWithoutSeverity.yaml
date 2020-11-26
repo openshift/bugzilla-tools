@@ -34,9 +34,6 @@ query:
   - ON_DEV
 update:
   comment:
-    body: This bug has set a target release without specifying a severity. As part
-      of triage when determining the importance of bugs a severity should be specified.
-      Since these bugs have not been properly triaged we are removing the target release.
-      Teams will need to add a severity before setting the target release again.
+    body: This bug has set a target release without specifying a severity. As part of triage when determining the importance of bugs a severity should be specified. Since these bugs have not been properly triaged we are removing the target release. Teams will need to add a severity before setting the target release again.
     is_private: true
   target_release: '---'
