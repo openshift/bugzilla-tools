@@ -33,11 +33,7 @@ query:
   - '---'
 update:
   comment:
-    body: |-
-      This bug sets Target Release equal to a z-stream but has no bug in the 'Depends On' field. As such this is not a valid bug state and the target release is being unset.
-
-      Any bug targeting 4.1.z must have a bug targeting 4.2 in 'Depends On.'
-      Similarly, any bug targeting 4.2.z must have a bug with Target Release of 4.3 in 'Depends On.'
+    body: This bug sets blocker+ without setting a Target Release. This is an invalid state as it is impossible to determine what is being blocked. Please be sure to set Priority, Severity, and Target Release before you attempt to set blocker+
     is_private: true
   flags:
   - name: blocker
