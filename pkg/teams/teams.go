@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/openshift/bugzilla-tools/pkg/config"
@@ -431,6 +432,43 @@ func getOrgData(cmd *cobra.Command) (*OrgData, error) {
 
 func GetOrgData(cmd *cobra.Command) (*OrgData, error) {
 	return getOrgData(cmd)
+}
+
+// CurrentVersion returns the lowest x.y version that has a x.y.0 target.
+func (orgData OrgData) CurrentVersion() (string, error) {
+	var all []string
+	var active []string
+	var order []string
+	for _, v := range orgData.Releases {
+		all = append(all, v.Name)
+		onlyZ := true
+		for _, target := range v.Targets {
+			if !strings.HasSuffix(target, ".z") {
+				onlyZ = false
+				break
+			}
+		}
+		if onlyZ {
+			continue
+		}
+
+		vs := strings.Split(v.Name, ".")
+		if len(vs) < 2 {
+			continue
+		}
+		active = append(active, fmt.Sprintf("%s.%s", vs[0], vs[1]))
+		if len(vs[1]) == 1 {
+			vs[1] = "0" + vs[1]
+		}
+		order = append(order, vs[0]+vs[1])
+	}
+	if len(active) == 0 {
+		return "", fmt.Errorf("no release found that has a x.y.0 target version: %v", all)
+	}
+	sort.Slice(active, func(i, j int) bool {
+		return order[i] < order[j]
+	})
+	return active[0], nil
 }
 
 func (orgData *OrgData) Reconcile() {
