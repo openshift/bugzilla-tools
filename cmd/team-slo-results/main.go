@@ -28,10 +28,11 @@ const (
 func getTeamSLOResults(cmd *cobra.Command, orgInfo *teams.OrgData, bugData *bugs.BugData) (sloAPI.TeamsResults, error) {
 	bugMaps := slo.GetBugMaps(bugData)
 
-	currentVersion, err := slo.CurrentVersion(orgInfo.Releases)
+	currentVersion, err := orgInfo.CurrentVersion()
 	if err != nil {
 		return nil, err
 	}
+
 	// TODO: consider more releases?
 	ciComponentMap, err := slo.GetCiComponentMap(currentVersion)
 	if err != nil {
