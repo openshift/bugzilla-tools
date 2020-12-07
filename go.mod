@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go v0.65.0 // indirect
 	github.com/boltdb/bolt v1.3.1
 	github.com/davecgh/go-spew v1.1.1
-	github.com/eparis/bugzilla v0.0.0-20201022181800-66527237a3e8
+	github.com/eparis/bugzilla v0.0.0-20201209172217-3e772538609a
 	github.com/eparis/goSmartSheet v0.0.6
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-logr/logr v0.3.0 // indirect

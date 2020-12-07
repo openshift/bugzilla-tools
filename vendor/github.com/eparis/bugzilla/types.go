@@ -111,6 +111,10 @@ type Bug struct {
 	Whiteboard string `json:"whiteboard,omitempty"`
 	// DevelWhiteboard is the value of the "devel whiteboard" field on the bug.
 	DevelWhiteboard string `json:"cf_devel_whiteboard,omitempty"`
+	// Escalation is set to "Yes" when this bug is escalated.
+	Escalation string `json:"cf_cust_facing,omitempty"`
+	// ExternalBugs is a list of references to other trackers.
+	ExternalBugs []ExternalBug `json:"external_bugs,omitempty"`
 }
 
 type Comment struct {
@@ -246,7 +250,12 @@ type ExternalBug struct {
 	BugzillaBugID int `json:"bug_id"`
 	// ExternalBugID is a unique identifier for the bug under the tracker
 	ExternalBugID string `json:"ext_bz_bug_id"`
-	// The following fields are parsed from the external bug identifier
+	// ExternalDescription is the description in the external bug system
+	ExternalDescription string `json:"ext_description"`
+	// ExternalPriority is the priority in the external bug system
+	ExternalPriority string `json:"ext_priority"`
+
+	// The following fields are parsed from the external bug identifier for github pulls. These are only filled by GetExternalBugPRsOnBug.
 	Org, Repo string
 	Num       int
 }
@@ -255,6 +264,10 @@ type ExternalBug struct {
 type ExternalBugType struct {
 	// URL is the identifying URL for this tracker
 	URL string `json:"url"`
+	// Description is the tracker name
+	Description string `json:"description"`
+	// Type is the key for the external bug type
+	Type string `json:"type"`
 }
 
 // AddExternalBugParameters are the parameters required to add an external
