@@ -229,6 +229,26 @@ func (orig *BugData) FilterBlocker() *BugData {
 	return orig.FilterByFlag(BlockerFlagName, BlockerFlagTrue)
 }
 
+func (orig *BugData) FilterUrgentCustomerCases() *BugData {
+	bd := orig.clone()
+	bugs := bd.GetBugs()
+
+	filtered := []*Bug{}
+	for _, bug := range bugs {
+		// bugs with customer case and not explicitly deprioritized
+		if (bug.Severity == "urgent" && bug.Priority == "unspecified") || bug.Priority == "urgent" {
+			for _, el := range bug.ExternalBugs {
+				if el.Type.Type == "SFDC" {
+					filtered = append(filtered, bug)
+					break
+				}
+			}
+		}
+	}
+	bd.set(filtered)
+	return bd
+}
+
 func (orig *BugData) FilterByTeams(teams []string) *BugData {
 	bd := orig.clone()
 	teamMap := bd.GetTeamMap()
@@ -335,7 +355,7 @@ func getAllOpenBugsQuery() bugzilla.Query {
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
 		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
-		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords", "cf_pm_score", "flags"},
+		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords", "cf_pm_score", "flags", "external_bugs"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",

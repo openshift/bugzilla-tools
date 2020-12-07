@@ -1,16 +1,18 @@
 package sloAPI
 
 const (
-	Urgent  = "urgents"
-	Blocker = "blockers"
-	All     = "total"
-	PMScore = "pmscore"
-	CI      = "ci-fail-rate"
+	Urgent              = "urgents"
+	Blocker             = "blockers"
+	UrgentCustomerCases = "urgent-customer-cases"
+	All                 = "total"
+	PMScore             = "pmscore"
+	CI                  = "ci-fail-rate"
 )
 
 var (
 	OrderedSLOs = []string{
 		Urgent,
+		UrgentCustomerCases,
 		Blocker,
 		PMScore,
 		CI,

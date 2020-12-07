@@ -62,9 +62,10 @@ func GetTeamsResults(cmd *cobra.Command) (*sloAPI.TeamsResults, error) {
 
 func GetBugMaps(bugData *bugs.BugData) map[string]bugs.TeamMap {
 	bugMaps := map[string]bugs.TeamMap{
-		sloAPI.All:     bugData.GetTeamMap(),
-		sloAPI.Urgent:  bugData.FilterBySeverity([]string{"urgent"}).GetTeamMap(),
-		sloAPI.Blocker: bugData.FilterBlocker().GetTeamMap(),
+		sloAPI.All:                 bugData.GetTeamMap(),
+		sloAPI.Urgent:              bugData.FilterBySeverity([]string{"urgent"}).GetTeamMap(),
+		sloAPI.Blocker:             bugData.FilterBlocker().GetTeamMap(),
+		sloAPI.UrgentCustomerCases: bugData.FilterUrgentCustomerCases().GetTeamMap(),
 	}
 	return bugMaps
 }
@@ -192,6 +193,8 @@ func GetTeamResult(bugMaps map[string]bugs.TeamMap, ciComponentsMap map[string]s
 		case sloAPI.All:
 			result = getCountResult(which, bugMaps, teamSLO, teamInfo)
 		case sloAPI.Urgent:
+			result = getCountResult(which, bugMaps, teamSLO, teamInfo)
+		case sloAPI.UrgentCustomerCases:
 			result = getCountResult(which, bugMaps, teamSLO, teamInfo)
 		case sloAPI.Blocker:
 			result = getCountResult(which, bugMaps, teamSLO, teamInfo)
