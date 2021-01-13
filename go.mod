@@ -25,7 +25,7 @@ require (
 	github.com/openshift/sippy v0.0.0-20200925184220-ce6139994b76
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.6.0
-	github.com/slack-go/slack v0.6.5
+	github.com/slack-go/slack v0.7.4
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect

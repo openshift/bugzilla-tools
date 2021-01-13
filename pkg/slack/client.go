@@ -84,11 +84,16 @@ func (c *slackClient) MessageEmail(email, message string) error {
 	if err != nil {
 		return err
 	}
-	_, _, chanID, err := c.client.OpenIMChannel(user.ID)
+	params := &slackgo.OpenConversationParameters{
+		Users: []string{
+			user.ID,
+		},
+	}
+	channel, _, _, err := c.client.OpenConversation(params)
 	if err != nil {
 		return err
 	}
-	_, _, err = c.client.PostMessage(chanID, slackgo.MsgOptionText(message, false))
+	_, _, err = c.client.PostMessage(channel.ID, slackgo.MsgOptionText(message, false))
 	return err
 }
 
