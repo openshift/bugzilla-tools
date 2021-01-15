@@ -1,8 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"jira-daily-diff:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"jira-daily-diff\")].image","pause":"false"}]
   labels:
     app: jira-daily-diff
+    app.kubernetes.io/component: jira-daily-diff
+    app.kubernetes.io/instance: jira-daily-diff
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
   name: jira-daily-diff
 spec:
   replicas: 1
@@ -19,7 +27,7 @@ spec:
         app: jira-daily-diff
     spec:
       containers:
-      - image: quay.io/eparis/jira-daily-diff:latest
+      - image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/jira-daily-diff:latest
         imagePullPolicy: Always
         name: jira-daily-diff
         resources: {}

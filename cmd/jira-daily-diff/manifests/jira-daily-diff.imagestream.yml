@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: jira-daily-diff
+  labels:
+    app: jira-daily-diff
+    app.kubernetes.io/component: jira-daily-diff
+    app.kubernetes.io/instance: jira-daily-diff
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
