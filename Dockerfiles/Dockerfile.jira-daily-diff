@@ -34,4 +34,4 @@ COPY --from=builder ${CMDDIR}/${CMD} /${CMD}
 RUN chmod +x /${CMD}
 
 COPY --from=node-builder /web/build /web/build
-CMD /${CMD}
+CMD /${CMD} --jira-key=/etc/jira/jiraKey
