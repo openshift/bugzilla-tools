@@ -1,16 +1,16 @@
 kind: CronJob
 apiVersion: batch/v1beta1
 metadata:
-  name: blocker-slack-git-build-watcher
+  name: jira-daily-diff-git-build-watcher
   annotations:
     app.openshift.io/vcs-ref: master
     app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
     image.openshift.io/triggers: >-
-      [{"from":{"kind":"ImageStreamTag","name":"git-build-watcher:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"blocker-slack-git-build-watcher\")].image","pause":"false"}]
+      [{"from":{"kind":"ImageStreamTag","name":"git-build-watcher:latest","namespace":"ocp-eng-architects"},"fieldPath":"spec.template.spec.containers[?(@.name==\"jira-daily-diff-git-build-watcher\")].image","pause":"false"}]
   labels:
-    app: blocker-slack-git-build-watcher
-    app.kubernetes.io/component: blocker-slack-git-build-watcher
-    app.kubernetes.io/instance: blocker-slack-git-build-watcher
+    app: jira-daily-diff-git-build-watcher
+    app.kubernetes.io/component: jira-daily-diff-git-build-watcher
+    app.kubernetes.io/instance: jira-daily-diff-git-build-watcher
     app.kubernetes.io/part-of: openshift-bugzilla-tools
 spec:
   concurrencyPolicy: Forbid
@@ -19,20 +19,20 @@ spec:
   jobTemplate:
     metadata:
       labels:
-        app: blocker-slack-git-build-watcher
-        app.kubernetes.io/component: blocker-slack-git-build-watcher
-        app.kubernetes.io/instance: blocker-slack-git-build-watcher
+        app: jira-daily-diff-git-build-watcher
+        app.kubernetes.io/component: jira-daily-diff-git-build-watcher
+        app.kubernetes.io/instance: jira-daily-diff-git-build-watcher
         app.kubernetes.io/part-of: openshift-bugzilla-tools
     spec:
       template:
         spec:
           containers:
-            - name: blocker-slack-git-build-watcher
+            - name: jira-daily-diff-git-build-watcher
               image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/git-build-watcher:latest
               command:
                 - /git-build-watcher
                 - -v=2
-                - blocker-slack
+                - jira-daily-diff
               resources:
                 requests:
                   memory: "50Mi"

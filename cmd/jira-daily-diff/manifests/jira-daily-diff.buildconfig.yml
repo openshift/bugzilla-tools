@@ -1,0 +1,39 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: main
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+  name: jira-daily-diff
+  labels:
+    app: jira-daily-diff
+    app.kubernetes.io/component: jira-daily-diff
+    app.kubernetes.io/instance: jira-daily-diff
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'jira-daily-diff:latest'
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1.5G
+    limits:
+      cpu: '2'
+      memory: 1.5G
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfiles/Dockerfile.jira-daily-diff
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/bugzilla-tools.git'
+      ref: main
+    contextDir: /
+  triggers:
+    - type: ConfigChange
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 1
+  failedBuildsHistoryLimit: 1

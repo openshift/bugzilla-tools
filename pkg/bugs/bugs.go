@@ -28,10 +28,11 @@ const (
 	BlockerFlagTrue      = "+"
 	BlockerFlagRequested = "?"
 
-	CurrentRelease = "4.7.0"
+	CurrentReleaseMinor = "4.7"
 )
 
 var (
+	CurrentRelease        = fmt.Sprintf("%s.0", CurrentReleaseMinor)
 	CurrentReleaseTargets = []string{"---", CurrentRelease}
 )
 

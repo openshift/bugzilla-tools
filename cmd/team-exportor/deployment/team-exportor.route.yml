@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: team-exportor
+  labels:
+    app: team-exportor
+    app.kubernetes.io/component: team-exportor
+    app.kubernetes.io/instance: team-exportor
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  to:
+    kind: Service
+    name: team-exportor
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

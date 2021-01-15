@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jira-daily-diff
+  name: jira-daily-diff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jira-daily-diff
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: jira-daily-diff
+    spec:
+      containers:
+      - image: quay.io/eparis/jira-daily-diff:latest
+        imagePullPolicy: Always
+        name: jira-daily-diff
+        resources: {}
+        volumeMounts:
+        - mountPath: /issues
+          name: issues-pvc
+        - mountPath: /etc/jira
+          name: jira-key
+          readOnly: true
+        ports:
+        - name: web
+          containerPort: 8002
+          protocol: TCP
+      restartPolicy: Always
+      volumes:
+      - name: issues-pvc
+        persistentVolumeClaim:
+          claimName: jira-daily-diff-pvc
+      - name: jira-key
+        secret:
+          defaultMode: 420
+          secretName: jira-key
