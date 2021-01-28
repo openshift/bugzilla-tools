@@ -8,7 +8,7 @@ run: build
 	./$(NAME)
 
 run-remove-upcoming-sprint: build
-	./$(NAME) --actions=removeUpcomingSprint
+	./$(NAME) --actions=removeUpcomingSprint --actions=removeReviewedInSprint
 
 apply-config: container-push
 	oc create secret generic bugzilla-api-key --from-file=bugzillaKey --dry-run=client -o yaml | oc apply -f -
