@@ -34,7 +34,6 @@ const (
 
 	blockerMsgFmt = "It seems there are %s and these bugs are *release blockers*:\nPlease keep eyes on these today!\n"
 	triageMsgFmt  = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Priority_ field set and do not have the _blocker?_ flag so I can stop bothering you :-)\n"
-	//upcomingSprintMsgFmt = "There are %s which do not have _UpcomingSprint_.\nPlease apply this keyword if the bug will not be resolved during this sprint\n"
 )
 
 var (
@@ -56,20 +55,20 @@ func NewBlockersReporter(schedule []string, operatorConfig config.OperatorConfig
 }
 
 type triageResult struct {
-	who                   string
-	bugs                  []int
-	seriousKeywordsIDs    map[string][]int
-	blockers              []string
-	blockerIDs            []int
-	needTriage            []string
-	needTriageIDs         []int
-	needUpcomingSprintIDs []int
-	postIDs               []int
-	nonLowIDs             []int
-	totalCount            int
-	staleCount            int
-	priorityCount         map[string]int
-	severityCount         map[string]int
+	who                     string
+	bugs                    []int
+	seriousKeywordsIDs      map[string][]int
+	blockers                []string
+	blockerIDs              []int
+	needTriage              []string
+	needTriageIDs           []int
+	needReviewedInSprintIDs []int
+	postIDs                 []int
+	nonLowIDs               []int
+	totalCount              int
+	staleCount              int
+	priorityCount           map[string]int
+	severityCount           map[string]int
 }
 
 func getLinkMsg(hrefFmt, msgFmt, who string, bugs []int, args ...string) string {
@@ -159,9 +158,9 @@ func (tr triageResult) getTeamMessages() []string {
 	href = fmt.Sprintf("%d Release Blockers", blockerCount)
 	blockersMsg := makeBugzillaLink(href, tr.blockerIDs)
 
-	needUpcomingSprint := len(tr.needUpcomingSprintIDs)
-	href = fmt.Sprintf("%d Bugs Without _UpcomingSprint_", needUpcomingSprint)
-	upcomingMsg := makeBugzillaLink(href, tr.needUpcomingSprintIDs)
+	needReviewedInSprint := len(tr.needReviewedInSprintIDs)
+	href = fmt.Sprintf("%d Bugs Not Reviewed In This Sprint", needReviewedInSprint)
+	upcomingMsg := makeBugzillaLink(href, tr.needReviewedInSprintIDs)
 
 	triageCount := len(tr.needTriage)
 	href = fmt.Sprintf("%d Untriaged Bugs", triageCount)
@@ -185,7 +184,7 @@ func (tr triageResult) getTeamMessages() []string {
 	if nonLowCount > 0 {
 		lines = append(lines, fmt.Sprintf("> %s", nonLowMsg))
 	}
-	if needUpcomingSprint > 0 {
+	if needReviewedInSprint > 0 {
 		lines = append(lines, fmt.Sprintf("> %s", upcomingMsg))
 	}
 	if triageCount > 0 {
@@ -237,8 +236,8 @@ func triageBug(who string, bugs ...*bugs.Bug) triageResult {
 		r.severityCount[bug.Severity]++
 		r.priorityCount[bug.Priority]++
 
-		if !bug.UpcomingSprint() {
-			r.needUpcomingSprintIDs = append(r.needUpcomingSprintIDs, bug.ID)
+		if !bug.ReviewedInSprint() {
+			r.needReviewedInSprintIDs = append(r.needReviewedInSprintIDs, bug.ID)
 		}
 
 		if bug.Untriaged() {

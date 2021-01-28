@@ -186,7 +186,7 @@ func bugsNeedBlockerFlagAction() bugzilla.BugUpdate {
 		Flags: []bugzilla.FlagChange{
 			{
 				Name:   bugs.BlockerFlagName,
-				Status: bugs.BlockerFlagRequested,
+				Status: bugs.FlagRequested,
 			},
 		},
 		MinorUpdate: true,
@@ -199,7 +199,7 @@ func blockerPlusWithoutTargetReleaseQuery() bugzilla.Query {
 	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
 		Field: "flagtypes.name",
 		Op:    "substring",
-		Value: bugs.BlockerFlagName + bugs.BlockerFlagTrue,
+		Value: bugs.BlockerFlagName + bugs.FlagTrue,
 	})
 	query.TargetRelease = []string{"---"}
 	return query
