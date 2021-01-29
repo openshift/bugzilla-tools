@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	UpcomingSprint   = "UpcomingSprint"
 	APIKeyFlagName   = "bugzilla-key"
 	apiKeyFlagDefVal = "bugzillaKey"
 	apiKeyFlagUsage  = "Path to file containing BZ API key"
@@ -24,9 +23,14 @@ const (
 	bugDataFlagDefVal = ""
 	bugDataFlagUsage  = "Path to file containing test bug data"
 
-	BlockerFlagName      = "blocker"
-	BlockerFlagTrue      = "+"
-	BlockerFlagRequested = "?"
+	UpcomingSprint           = "UpcomingSprint"
+	ReviewedInSprintFlagName = "reviewed-in-sprint"
+
+	BlockerFlagName = "blocker"
+
+	FlagTrue      = "+"
+	FlagRequested = "?"
+	FlagFalse     = "-"
 
 	CurrentReleaseMinor = "4.7"
 )
@@ -42,7 +46,10 @@ func (b *Bug) APIBug() *bugzilla.Bug {
 	return (*bugzilla.Bug)(b)
 }
 
-func (b Bug) UpcomingSprint() bool {
+func (b Bug) ReviewedInSprint() bool {
+	if b.Flag(ReviewedInSprintFlagName, FlagTrue) {
+		return true
+	}
 	for _, found := range b.Keywords {
 		if found == UpcomingSprint {
 			return true
@@ -67,11 +74,11 @@ func (b Bug) Flag(name, status string) bool {
 }
 
 func (b Bug) Blocker() bool {
-	return b.Flag(BlockerFlagName, BlockerFlagTrue)
+	return b.Flag(BlockerFlagName, FlagTrue)
 }
 
 func (b Bug) BlockerRequested() bool {
-	return b.Flag(BlockerFlagName, BlockerFlagRequested)
+	return b.Flag(BlockerFlagName, FlagRequested)
 }
 
 func (b Bug) Untriaged() bool {
@@ -111,18 +118,18 @@ func (b TeamMap) CountAll(team string) int {
 	return len(b[team])
 }
 
-func (b TeamMap) CountUpcomingSprint(team string) int {
+func (b TeamMap) CountReviewedInSprint(team string) int {
 	count := 0
 	for _, bug := range b[team] {
-		if bug.UpcomingSprint() {
+		if bug.ReviewedInSprint() {
 			count += 1
 		}
 	}
 	return count
 }
 
-func (b TeamMap) CountNotUpcomingSprint(team string) int {
-	return b.CountAll(team) - b.CountUpcomingSprint(team)
+func (b TeamMap) CountNotReviewedInSprint(team string) int {
+	return b.CountAll(team) - b.CountReviewedInSprint(team)
 }
 
 func (b TeamMap) CountLowSeverity(team string) int {
@@ -227,7 +234,7 @@ func (orig *BugData) FilterByFlag(name, status string) *BugData {
 }
 
 func (orig *BugData) FilterBlocker() *BugData {
-	return orig.FilterByFlag(BlockerFlagName, BlockerFlagTrue)
+	return orig.FilterByFlag(BlockerFlagName, FlagTrue)
 }
 
 func (orig *BugData) FilterByTeams(teams []string) *BugData {
