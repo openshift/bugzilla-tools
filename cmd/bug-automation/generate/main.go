@@ -90,6 +90,29 @@ func bugsWithUpcomingSprintQuery() bugzilla.Query {
 	return query
 }
 
+func bugsWithReviewedInSprintFlagQuery() bugzilla.Query {
+	query := defaultQuery()
+	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
+		Field:  "flagtypes.name",
+		Op:     "substring",
+		Value:  bugs.ReviewedInSprintFlagName + bugs.FlagTrue,
+		Negate: true,
+	})
+	return query
+}
+
+func bugsWithReviewedInSprintFlagUpdate() bugzilla.BugUpdate {
+	return bugzilla.BugUpdate{
+		Flags: []bugzilla.FlagChange{
+			{
+				Name:   bugs.ReviewedInSprintFlagName,
+				Status: bugs.FlagFalse,
+			},
+		},
+		MinorUpdate: true,
+	}
+}
+
 func bugsWithUpcomingSprintUpdate() bugzilla.BugUpdate {
 	return bugzilla.BugUpdate{
 		Keywords: &bugzilla.BugKeywords{
@@ -191,7 +214,6 @@ func bugsNeedBlockerFlagAction() bugzilla.BugUpdate {
 		},
 		MinorUpdate: true,
 	}
-
 }
 
 func blockerPlusWithoutTargetReleaseQuery() bugzilla.Query {
@@ -256,6 +278,13 @@ func doGenerate() error {
 			Description: "Remove UpcomingSprint from all bugs",
 			Query:       bugsWithUpcomingSprintQuery(),
 			Update:      bugsWithUpcomingSprintUpdate(),
+			Default:     false,
+		},
+		{
+			Name:        "removeReviewedInSprint",
+			Description: "Set reviewed-in-sprint flag to '-' in all bugs",
+			Query:       bugsWithReviewedInSprintFlagQuery(),
+			Update:      bugsWithReviewedInSprintFlagUpdate(),
 			Default:     false,
 		},
 		{

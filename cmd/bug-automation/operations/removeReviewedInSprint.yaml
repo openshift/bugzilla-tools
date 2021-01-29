@@ -1,0 +1,37 @@
+default: false
+description: Set reviewed-in-sprint flag to '-' in all bugs
+name: removeReviewedInSprint
+query:
+  advanced:
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Migration Tooling
+  - field: component
+    negate: true
+    op: equals
+    value: odo
+  - field: flagtypes.name
+    negate: true
+    op: substring
+    value: reviewed-in-sprint+
+  classification:
+  - Red Hat
+  include_fields:
+  - id
+  product:
+  - OpenShift Container Platform
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+update:
+  flags:
+  - name: reviewed-in-sprint
+    status: '-'
+  minor_update: true
