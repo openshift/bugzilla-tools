@@ -183,12 +183,29 @@ func targetReleaseWithoutSeverityUpdate() bugzilla.BugUpdate {
 
 func needsBlockerFlagQuery() bugzilla.Query {
 	query := defaultQuery()
-	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
-		Field:  "flagtypes.name",
-		Op:     "substring",
-		Value:  bugs.BlockerFlagName,
-		Negate: true,
-	})
+	query.Advanced = append(query.Advanced, []bugzilla.AdvancedQuery{
+		{
+			Field:  "flagtypes.name",
+			Op:     "substring",
+			Value:  bugs.BlockerFlagName,
+			Negate: true,
+		},
+		{
+			Field: "target_release",
+			Op:    "notregexp",
+			Value: `^4\.[0-9]+\.z$`,
+		},
+		{
+			Field: "version",
+			Op:    "notregexp",
+			Value: `^2\.`,
+		},
+		{
+			Field: "version",
+			Op:    "notregexp",
+			Value: `^3\.`,
+		},
+	}...)
 	return query
 }
 
