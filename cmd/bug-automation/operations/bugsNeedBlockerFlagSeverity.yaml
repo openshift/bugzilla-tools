@@ -19,6 +19,15 @@ query:
     negate: true
     op: substring
     value: blocker
+  - field: target_release
+    op: notregexp
+    value: ^4\.[0-9]+\.z$
+  - field: version
+    op: notregexp
+    value: ^2\.
+  - field: version
+    op: notregexp
+    value: ^3\.
   classification:
   - Red Hat
   include_fields:
