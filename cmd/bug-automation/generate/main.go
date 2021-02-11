@@ -93,10 +93,9 @@ func bugsWithUpcomingSprintQuery() bugzilla.Query {
 func bugsWithReviewedInSprintFlagQuery() bugzilla.Query {
 	query := defaultQuery()
 	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
-		Field:  "flagtypes.name",
-		Op:     "substring",
-		Value:  bugs.ReviewedInSprintFlagName + bugs.FlagTrue,
-		Negate: true,
+		Field: "flagtypes.name",
+		Op:    "equals",
+		Value: bugs.ReviewedInSprintFlagName + bugs.FlagTrue,
 	})
 	return query
 }
