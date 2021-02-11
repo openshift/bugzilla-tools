@@ -16,8 +16,7 @@ query:
     op: equals
     value: odo
   - field: flagtypes.name
-    negate: true
-    op: substring
+    op: equals
     value: reviewed-in-sprint+
   classification:
   - Red Hat
