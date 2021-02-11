@@ -18,7 +18,7 @@ query:
   - field: flagtypes.name
     negate: true
     op: substring
-    value: reviewed-in-sprint+
+    value: reviewed-in-sprint-
   classification:
   - Red Hat
   include_fields:
