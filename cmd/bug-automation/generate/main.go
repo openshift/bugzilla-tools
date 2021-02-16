@@ -141,6 +141,12 @@ func bugsWithoutZQuery() bugzilla.Query {
 			Value:  "Release",
 			Negate: true,
 		},
+		{
+			Field:  "component",
+			Op:     "equals",
+			Value:  "Logging",
+			Negate: true,
+		},
 	}...)
 	return query
 }
