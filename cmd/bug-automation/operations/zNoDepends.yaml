@@ -24,6 +24,10 @@ query:
     negate: true
     op: equals
     value: Release
+  - field: component
+    negate: true
+    op: equals
+    value: Logging
   classification:
   - Red Hat
   include_fields:
