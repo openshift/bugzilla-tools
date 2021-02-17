@@ -6,10 +6,6 @@ query:
   - field: component
     negate: true
     op: equals
-    value: Logging
-  - field: component
-    negate: true
-    op: equals
     value: Documentation
   - field: component
     negate: true
