@@ -20,7 +20,7 @@ spec:
                 defaultMode: 420
           containers:
             - name: bug-automation
-              image: 'quay.io/eparis/bug-automation:latest'
+              image: image-registry.openshift-image-registry.svc:5000/ocp-eng-architects/bug-automation:latest
               resources: {}
               volumeMounts:
                 - name: bugzilla-api-key

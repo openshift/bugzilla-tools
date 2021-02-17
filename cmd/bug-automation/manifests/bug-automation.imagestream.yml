@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: bug-automation
+  labels:
+    app: bug-automation
+    app.kubernetes.io/component: bug-automation
+    app.kubernetes.io/instance: bug-automation
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
