@@ -1,0 +1,39 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  annotations:
+    app.openshift.io/vcs-ref: main
+    app.openshift.io/vcs-uri: 'https://github.com/openshift/bugzilla-tools.git'
+  name: bug-automation
+  labels:
+    app: bug-automation
+    app.kubernetes.io/component: bug-automation
+    app.kubernetes.io/instance: bug-automation
+    app.kubernetes.io/part-of: openshift-bugzilla-tools
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'bug-automation:latest'
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfiles/Dockerfile.bug-automation
+  source:
+    type: Git
+    git:
+      uri: 'https://github.com/openshift/bugzilla-tools.git'
+      ref: main
+    contextDir: /
+  triggers:
+    - type: ConfigChange
+  resources:
+    requests:
+      cpu: '1'
+      memory: 2G
+    limits:
+      cpu: '1.5'
+      memory: 2G
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 1
+  failedBuildsHistoryLimit: 1
