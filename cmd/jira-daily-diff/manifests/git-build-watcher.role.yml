@@ -1,1 +1,1 @@
-../../blocker-slack/manifests/git-build-watcher.role.yml
+../../../manifests/git-build-watcher.role.yml
