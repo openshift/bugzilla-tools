@@ -5,7 +5,7 @@ ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
 ENV CMDBASE=cmd/${CMD}/
 ENV CMDDIR=${PROJECT}/${CMDBASE}/
 
-COPY . ${PROJECT}
+COPY --chown=default:root . ${PROJECT}
 WORKDIR ${CMDDIR}
 RUN make build
 
