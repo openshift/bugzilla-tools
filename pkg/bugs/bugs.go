@@ -201,6 +201,23 @@ func (orig *BugData) FilterByTargetRelease(sTargets []string) *BugData {
 	return bd
 }
 
+func (orig *BugData) FilterByStatus(statuses []string) *BugData {
+	bd := orig.clone()
+	bugs := bd.GetBugs()
+
+	statusSet := sets.NewString(statuses...)
+	filtered := []*Bug{}
+	for i := range bugs {
+		bug := bugs[i]
+		if !statusSet.Has(bug.Severity) {
+			continue
+		}
+		filtered = append(filtered, bug)
+	}
+	bd.set(filtered)
+	return bd
+}
+
 func (orig *BugData) FilterBySeverity(sSeverities []string) *BugData {
 	bd := orig.clone()
 	bugs := bd.GetBugs()
