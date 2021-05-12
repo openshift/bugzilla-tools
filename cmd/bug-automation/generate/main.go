@@ -19,24 +19,11 @@ var (
 	testBugs = []string{}
 )
 
-func onEngineeringStatus() []string {
-	return []string{
-		"NEW",
-		"ASSIGNED",
-		"POST",
-		"ON_DEV",
-	}
-}
-
-func allOpenStatus() []string {
-	return append(onEngineeringStatus(), "MODIFIED", "ON_QA")
-}
-
 func defaultQuery() bugzilla.Query {
 	query := bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
-		Status:         onEngineeringStatus(),
+		Status:         bugs.OnEngineeringStatus(),
 		Advanced: []bugzilla.AdvancedQuery{
 			{
 				Field:  "component",
@@ -84,7 +71,7 @@ func bugsTargetOldZeroUpdate() bugzilla.BugUpdate {
 
 func bugsWithUpcomingSprintQuery() bugzilla.Query {
 	query := defaultQuery()
-	query.Status = allOpenStatus()
+	query.Status = bugs.AllOpenStatus()
 	query.Keywords = []string{"UpcomingSprint"}
 	query.KeywordsType = "allwords"
 	return query

@@ -338,11 +338,26 @@ func BugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 	return bugzilla.NewClient(*generator, endpoint), nil
 }
 
+// OnEngineeringStatus returns a slice of bug status that are blocked on engineering.
+func OnEngineeringStatus() []string {
+	return []string{
+		"NEW",
+		"ASSIGNED",
+		"POST",
+		"ON_DEV",
+	}
+}
+
+// AllOpenStatus returns a slice of bug status that are blocked on engineering, release creation, or quality control.
+func AllOpenStatus() []string {
+	return append(OnEngineeringStatus(), "MODIFIED", "ON_QA")
+}
+
 func getAllOpenBugsQuery() bugzilla.Query {
 	return bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
-		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
+		Status:         AllOpenStatus(),
 		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords", "cf_pm_score", "flags"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{
