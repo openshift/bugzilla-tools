@@ -21,7 +21,7 @@ query:
     value: blocker
   - field: target_release
     op: notregexp
-    value: ^4\.[0-9]+\.z$
+    value: ^4\.[0-9]+\.z$|premerge$
   - field: version
     op: notregexp
     value: ^2\.

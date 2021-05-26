@@ -18,6 +18,9 @@ query:
   - field: flagtypes.name
     op: equals
     value: reviewed-in-sprint+
+  - field: target_release
+    op: notregexp
+    value: premerge$
   classification:
   - Red Hat
   include_fields:
