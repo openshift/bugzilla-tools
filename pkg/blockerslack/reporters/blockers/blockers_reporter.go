@@ -236,7 +236,7 @@ func triageBug(who string, bugs ...*bugs.Bug) triageResult {
 		r.severityCount[bug.Severity]++
 		r.priorityCount[bug.Priority]++
 
-		if !bug.ReviewedInSprint() {
+		if !bug.ReviewedInSprint() && !strings.Contains(bug.TargetRelease, "premerge") {
 			r.needReviewedInSprintIDs = append(r.needReviewedInSprintIDs, bug.ID)
 		}
 

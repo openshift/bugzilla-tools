@@ -92,11 +92,18 @@ func bugsWithUpcomingSprintQuery() bugzilla.Query {
 
 func bugsWithReviewedInSprintFlagQuery() bugzilla.Query {
 	query := defaultQuery()
-	query.Advanced = append(query.Advanced, bugzilla.AdvancedQuery{
-		Field: "flagtypes.name",
-		Op:    "equals",
-		Value: bugs.ReviewedInSprintFlagName + bugs.FlagTrue,
-	})
+	query.Advanced = append(query.Advanced, []bugzilla.AdvancedQuery{
+		{
+			Field: "flagtypes.name",
+			Op:    "equals",
+			Value: bugs.ReviewedInSprintFlagName + bugs.FlagTrue,
+		},
+		{
+			Field: "target_release",
+			Op:    "notregexp",
+			Value: `premerge$`,
+		},
+	}...)
 	return query
 }
 
@@ -198,7 +205,7 @@ func needsBlockerFlagQuery() bugzilla.Query {
 		{
 			Field: "target_release",
 			Op:    "notregexp",
-			Value: `^4\.[0-9]+\.z$`,
+			Value: `^4\.[0-9]+\.z$|premerge$`,
 		},
 		{
 			Field: "version",
