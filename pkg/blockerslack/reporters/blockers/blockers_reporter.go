@@ -273,6 +273,8 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 		return err
 	}
 
+	c.bugData = c.bugData.FilterByStatus(bugs.OnEngineeringStatus())
+
 	peopleNotificationMap, teamNotificationMap := Report(ctx, c.orgData, c.bugData, syncCtx.Recorder(), &c.config)
 
 	for person, results := range peopleNotificationMap {

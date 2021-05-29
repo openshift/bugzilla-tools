@@ -201,6 +201,23 @@ func (orig *BugData) FilterByTargetRelease(sTargets []string) *BugData {
 	return bd
 }
 
+func (orig *BugData) FilterByStatus(statuses []string) *BugData {
+	bd := orig.clone()
+	bugs := bd.GetBugs()
+
+	statusSet := sets.NewString(statuses...)
+	filtered := []*Bug{}
+	for i := range bugs {
+		bug := bugs[i]
+		if !statusSet.Has(bug.Severity) {
+			continue
+		}
+		filtered = append(filtered, bug)
+	}
+	bd.set(filtered)
+	return bd
+}
+
 func (orig *BugData) FilterBySeverity(sSeverities []string) *BugData {
 	bd := orig.clone()
 	bugs := bd.GetBugs()
@@ -338,11 +355,26 @@ func BugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 	return bugzilla.NewClient(*generator, endpoint), nil
 }
 
+// OnEngineeringStatus returns a slice of bug status that are blocked on engineering.
+func OnEngineeringStatus() []string {
+	return []string{
+		"NEW",
+		"ASSIGNED",
+		"POST",
+		"ON_DEV",
+	}
+}
+
+// AllOpenStatus returns a slice of bug status that are blocked on engineering, release creation, or quality control.
+func AllOpenStatus() []string {
+	return append(OnEngineeringStatus(), "MODIFIED", "ON_QA")
+}
+
 func getAllOpenBugsQuery() bugzilla.Query {
 	return bugzilla.Query{
 		Classification: []string{"Red Hat"},
 		Product:        []string{"OpenShift Container Platform"},
-		Status:         []string{"NEW", "ASSIGNED", "POST", "ON_DEV", "MODIFIED"},
+		Status:         AllOpenStatus(),
 		IncludeFields:  []string{"id", "summary", "status", "severity", "priority", "assigned_to", "target_release", "component", "sub_components", "keywords", "cf_pm_score", "flags"},
 		Advanced: []bugzilla.AdvancedQuery{
 			{

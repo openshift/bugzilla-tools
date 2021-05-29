@@ -91,6 +91,7 @@ func doMain(cmd *cobra.Command) error {
 		return err
 	}
 	bugData.Reconciler(errs)
+	bugData = bugData.FilterByStatus(bugs.OnEngineeringStatus())
 
 	serveResults := &sloAPI.TeamsResults{}
 
