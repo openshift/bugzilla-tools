@@ -147,6 +147,14 @@ func bugsWithoutZQuery() bugzilla.Query {
 			Value:  "Logging",
 			Negate: true,
 		},
+		// if a bug is marked as a blocker+, don't remove the target release
+		// because we risk unblocking the release
+		{
+			Field:  "flagtypes.name",
+			Op:     "equals",
+			Value:  bugs.BlockerFlagName + bugs.FlagTrue,
+			Negate: true,
+		},
 	}...)
 	return query
 }
