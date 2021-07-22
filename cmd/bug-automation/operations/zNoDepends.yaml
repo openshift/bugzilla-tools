@@ -28,6 +28,10 @@ query:
     negate: true
     op: equals
     value: Logging
+  - field: flagtypes.name
+    negate: true
+    op: equals
+    value: blocker+
   classification:
   - Red Hat
   include_fields:
