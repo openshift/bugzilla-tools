@@ -32,8 +32,8 @@ spec:
       cpu: '1'
       memory: 2G
     limits:
-      cpu: '1.5'
-      memory: 2G
+      cpu: '2'
+      memory: 2.5G
   runPolicy: Serial
   successfulBuildsHistoryLimit: 1
   failedBuildsHistoryLimit: 1
