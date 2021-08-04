@@ -101,6 +101,17 @@ func (b Bug) LowPriorityAndSeverity() bool {
 	return false
 }
 
+func (b Bug) HasTargetRelease(targets []string) bool {
+	for _, bugTarget := range b.TargetRelease {
+		for _, searchTarget := range targets {
+			if bugTarget == searchTarget {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 type PeopleMap map[string][]*Bug
 
 type TeamMap map[string][]*Bug
@@ -188,14 +199,12 @@ func (orig *BugData) FilterByTargetRelease(sTargets []string) *BugData {
 	bd := orig.clone()
 	bugs := orig.GetBugs()
 
-	targets := sets.NewString(sTargets...)
 	filtered := []*Bug{}
 	for i := range bugs {
 		bug := bugs[i]
-		if !targets.Has(bug.TargetRelease[0]) {
-			continue
+		if bug.HasTargetRelease(sTargets) {
+			filtered = append(filtered, bug)
 		}
-		filtered = append(filtered, bug)
 	}
 	bd.set(filtered)
 	return bd
