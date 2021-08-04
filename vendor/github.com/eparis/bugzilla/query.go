@@ -24,6 +24,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	maxSearchLen = 1000
+)
+
 // Values returns a url.Values strcture based on the query search parameters.
 func (q *Query) Values() *url.Values {
 	values := &url.Values{}
@@ -96,11 +100,25 @@ func (q *Query) Values() *url.Values {
 // Search retrieves all Bugs matching the search
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#search-bugs
 func (c *client) Search(query Query) ([]*Bug, error) {
+	offset := 0
+	outbugs := []*Bug{}
+
 	logger := c.logger.WithFields(logrus.Fields{methodField: "Search"})
 	url := fmt.Sprintf("%s/rest/bug", c.endpoint)
-	bugs, err := c.getBugs(url, query.Values(), logger)
-	if err != nil {
-		return nil, err
+
+	values := query.Values()
+	for {
+		values.Set("limit", fmt.Sprint(maxSearchLen))
+		values.Set("offset", fmt.Sprint(offset))
+		bugs, err := c.getBugs(url, values, logger)
+		if err != nil {
+			return nil, err
+		}
+		outbugs = append(outbugs, bugs...)
+		offset += maxSearchLen
+		if len(bugs) < maxSearchLen {
+			break
+		}
 	}
-	return bugs, nil
+	return outbugs, nil
 }
