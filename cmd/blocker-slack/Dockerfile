@@ -1,7 +1,22 @@
+FROM registry.access.redhat.com/ubi8/go-toolset AS builder
+ENV CMD=blocker-slack
+ENV GOPATH=/go
+ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
+ENV CMDBASE=cmd/${CMD}/
+ENV CMDDIR=${PROJECT}/${CMDBASE}/
+
+COPY --chown=default:root . ${PROJECT}
+WORKDIR ${CMDDIR}
+RUN make build
+
 FROM registry.access.redhat.com/ubi8/ubi-minimal
+ENV CMD=blocker-slack
+ENV GOPATH=/go
+ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
+ENV CMDBASE=cmd/${CMD}/
+ENV CMDDIR=${PROJECT}/${CMDBASE}/
+
 RUN microdnf update -y && rpm -e --justdb --nodeps tzdata && microdnf install -y tzdata && microdnf clean all
-
-COPY blocker-slack /blocker-slack
-RUN chmod +x /blocker-slack
-
-CMD /blocker-slack --bugzilla-key=/etc/bugzilla/bugzillaKey --slack-key=/etc/slack/slackKey --config=/etc/blocker-slack/config.yaml
+COPY --from=builder ${CMDDIR}/${CMD} /${CMD}
+RUN chmod +x /${CMD}
+CMD /${CMD} --bugzilla-key=/etc/bugzilla/bugzillaKey --slack-key=/etc/slack/slackKey --config=/etc/blocker-slack/config.yaml
