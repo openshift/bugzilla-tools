@@ -332,7 +332,7 @@ func getOrgDataFromLi(cmd *cobra.Command) (*OrgData, error) {
 	return primaryOrgData, nil
 }
 
-// This could actually get the data from local file (--test-data=) or from github itself.
+// This could actually get the data from local file (--test-team-data=) or from github itself.
 func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 	orgData, err := getOrgDataFromFile(cmd, teamDataFlagName)
 	if err != nil && err != config.NotSetError {
@@ -346,7 +346,7 @@ func getOrgDataFromGithub(cmd *cobra.Command) (*OrgData, error) {
 		}
 	}
 
-	// get the overwrite data
+	// get the overwrite data from local file (--overwrite-team-data)
 	overrideOrgData, err := getOrgDataFromFile(cmd, teamOverwriteFlagName)
 	if err != nil && err != config.NotSetError {
 		return nil, err

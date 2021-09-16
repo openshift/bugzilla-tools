@@ -24,7 +24,7 @@ func GetTeamHandler(orgData *teams.OrgData) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		err := json.NewEncoder(w).Encode(orgData)
 		if err != nil {
-			fmt.Errorf("Unable to encode: %v: %v", orgData, err)
+			fmt.Printf("Unable to encode: %v: %v\n", orgData, err)
 		}
 	}
 }
@@ -61,7 +61,7 @@ func doMain(cmd *cobra.Command, _ []string) error {
 
 	select {
 	case <-stop:
-		fmt.Println("Sutting down...")
+		fmt.Println("Shutting down...")
 		return nil
 	case err := <-errs:
 		fmt.Println("Failed to start server:", err.Error())
