@@ -1,0 +1,22 @@
+FROM registry.access.redhat.com/ubi8/go-toolset AS builder
+ENV CMD=team-exportor
+ENV GOPATH=/go
+ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
+ENV CMDBASE=cmd/${CMD}/
+ENV CMDDIR=${PROJECT}/${CMDBASE}/
+
+COPY --chown=default:root . ${PROJECT}
+
+WORKDIR ${PROJECT}
+RUN make build
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+ENV CMD=team-exportor
+ENV GOPATH=/go
+ENV PROJECT=${GOPATH}/src/github.com/openshift/bugzilla-tools/
+
+RUN microdnf update -y && microdnf clean all
+COPY --from=builder ${PROJECT}/${CMD} /${CMD}
+# RUN chmod +x /${CMD}
+
+CMD /${CMD} --overwrite-team-data=/var/run/overwriteTeamData.yml --github-key=/etc/github/githubKey --data-from-github --google-sheet=/etc/google-sheet/
