@@ -1,0 +1,81 @@
+kind: List
+apiVersion: v1
+items:
+
+- apiVersion: v1
+  data:
+    default.conf: "server {\n  listen 8080;\n  return 302 https://team-exporter.dptools.openshift.org$request_uri;\n}\n"
+  kind: ConfigMap
+  metadata:
+    name: team-exporter-redirect-config
+    namespace: ocp-eng-architects
+
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    labels:
+      app: team-exporter-redirect
+    name: team-exporter-redirect
+    namespace: ocp-eng-architects
+  spec:
+    replicas: 2
+    selector:
+      matchLabels:
+        component: team-exporter-redirect
+    template:
+      metadata:
+        labels:
+          component: team-exporter-redirect
+      spec:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                  - team-exporter-redirect
+              topologyKey: kubernetes.io/hostname
+        containers:
+        - image: nginxinc/nginx-unprivileged:1.17
+          name: nginx
+          volumeMounts:
+          - mountPath: /etc/nginx/conf.d
+            name: config
+        volumes:
+        - configMap:
+            name: team-exporter-redirect-config
+          name: config
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      component: team-exporter-redirect
+    name: team-exporter-redirect
+    namespace: ocp-eng-architects
+  spec:
+    ports:
+    - name: main
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      component: team-exporter-redirect
+    sessionAffinity: None
+    type: ClusterIP
+
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: team-exporter
+    namespace: ocp-eng-architects
+  spec:
+    host: team-exportor-ocp-eng-architects.apps.ocp4.prod.psi.redhat.com
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: Edge
+    to:
+      kind: Service
+      name: team-exporter-redirect
