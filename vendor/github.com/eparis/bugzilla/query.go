@@ -24,10 +24,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	maxSearchLen = 1000
-)
-
 // Values returns a url.Values strcture based on the query search parameters.
 func (q *Query) Values() *url.Values {
 	values := &url.Values{}
@@ -100,6 +96,7 @@ func (q *Query) Values() *url.Values {
 // Search retrieves all Bugs matching the search
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#search-bugs
 func (c *client) Search(query Query) ([]*Bug, error) {
+	limit := 0
 	offset := 0
 	outbugs := []*Bug{}
 
@@ -108,17 +105,30 @@ func (c *client) Search(query Query) ([]*Bug, error) {
 
 	values := query.Values()
 	for {
-		values.Set("limit", fmt.Sprint(maxSearchLen))
+		values.Set("limit", fmt.Sprint(limit))
 		values.Set("offset", fmt.Sprint(offset))
 		bugs, err := c.getBugs(url, values, logger)
 		if err != nil {
 			return nil, err
 		}
-		outbugs = append(outbugs, bugs...)
-		offset += maxSearchLen
-		if len(bugs) < maxSearchLen {
+		if len(bugs) == 0 {
 			break
 		}
+		outbugs = append(outbugs, bugs...)
+
+		// If we do a query and get back N bugs we assume that N was the maximum number of bugs we can get
+		// If the server can send us 1,000 bugs and we get back only 12, we're going to assume that 12 was
+		// the server limit. And we are going to do a second query with limit = 12, offset = 12. That second
+		// query will return 0 bugs and we will break.
+		// That wasted second query wouldn't be needed if we could tell how many total bugs existed or if we
+		// knew the server limit. Since we don't have either, best we can do it guess and test.
+		if limit == 0 {
+			limit = len(bugs)
+		}
+		if len(bugs) < limit {
+			break
+		}
+		offset += limit
 	}
 	return outbugs, nil
 }
