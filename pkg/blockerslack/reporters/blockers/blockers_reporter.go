@@ -32,8 +32,9 @@ const (
 	countHrefFmt    = "%d bugs"
 	assigneeHrefFmt = "%d bugs assigned to %s"
 
-	blockerMsgFmt = "It seems there are %s and these bugs are *release blockers*:\nPlease keep eyes on these today!\n"
-	triageMsgFmt  = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Priority_ field set and do not have the _blocker?_ flag so I can stop bothering you :-)\n"
+	blockerMsgFmt         = "It seems there are %s and these bugs are *release blockers*:\nPlease keep eyes on these today!\n"
+	proposedBlockerMsgFmt = "Here are %s and they are *proposed* release blockers:\nPlease set them to either blocker+ or blocker- as soon as reasonable\n"
+	triageMsgFmt          = "I found %s which are untriaged\nPlease make sure all bugs have the _Severity_ and _Priority_ field set and do not have the _blocker?_ flag so I can stop bothering you :-)\n"
 )
 
 var (
@@ -60,6 +61,8 @@ type triageResult struct {
 	seriousKeywordsIDs      map[string][]int
 	blockers                []string
 	blockerIDs              []int
+	proposedBlockers        []string
+	proposedBlockerIDs      []int
 	needTriage              []string
 	needTriageIDs           []int
 	needReviewedInSprintIDs []int
@@ -87,6 +90,12 @@ func (tr triageResult) getPersonalMessages() []string {
 	blockerLen := len(tr.blockers)
 	if blockerLen > 0 {
 		message := getLinkMsg(assigneeHrefFmt, blockerMsgFmt, tr.who, tr.blockerIDs)
+		messages = append(messages, message)
+	}
+
+	proposedBlockersLen := len(tr.proposedBlockers)
+	if proposedBlockersLen > 0 {
+		message := getLinkMsg(assigneeHrefFmt, proposedBlockerMsgFmt, tr.who, tr.proposedBlockerIDs)
 		messages = append(messages, message)
 	}
 
@@ -158,6 +167,10 @@ func (tr triageResult) getTeamMessages() []string {
 	href = fmt.Sprintf("%d Release Blockers", blockerCount)
 	blockersMsg := makeBugzillaLink(href, tr.blockerIDs)
 
+	proposedBlockerCount := len(tr.proposedBlockers)
+	href = fmt.Sprintf("%d Proposed Release Blockers", proposedBlockerCount)
+	proposedBlockersMsg := makeBugzillaLink(href, tr.proposedBlockerIDs)
+
 	needReviewedInSprint := len(tr.needReviewedInSprintIDs)
 	href = fmt.Sprintf("%d Bugs Not Reviewed In This Sprint", needReviewedInSprint)
 	upcomingMsg := makeBugzillaLink(href, tr.needReviewedInSprintIDs)
@@ -180,6 +193,7 @@ func (tr triageResult) getTeamMessages() []string {
 		fmt.Sprintf("> Bugs Severity Breakdown: %s", strings.Join(severityMessages, ", ")),
 		fmt.Sprintf("> Bugs Priority Breakdown: %s", strings.Join(priorityMessages, ", ")),
 		fmt.Sprintf("> %s", blockersMsg),
+		fmt.Sprintf("> %s", proposedBlockersMsg),
 	}
 	if nonLowCount > 0 {
 		lines = append(lines, fmt.Sprintf("> %s", nonLowMsg))
@@ -243,6 +257,11 @@ func triageBug(who string, bugs ...*bugs.Bug) triageResult {
 		if bug.Untriaged() {
 			r.needTriage = append(r.needTriage, bugutil.FormatBugMessage(bug))
 			r.needTriageIDs = append(r.needTriageIDs, bug.ID)
+		}
+
+		if bug.BlockerRequested() {
+			r.proposedBlockers = append(r.proposedBlockers, bugutil.FormatBugMessage(bug))
+			r.proposedBlockerIDs = append(r.proposedBlockerIDs, bug.ID)
 		}
 
 		if bug.Blocker() {
@@ -331,6 +350,9 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 func Report(ctx context.Context, orgData *teams.OrgData, bugData *bugs.BugData, recorder events.Recorder, config *config.OperatorConfig) (peopleNotificationMap notificationMap, teamNotificationMap notificationMap) {
 	teamsWithChannel := []string{}
 	for team, teamInfo := range orgData.Teams {
+		if team != "OpenShift Installer" {
+			continue
+		}
 		if teamInfo.SlackChan != "" {
 			teamsWithChannel = append(teamsWithChannel, team)
 		}
