@@ -86,7 +86,12 @@ func (tc *testClient) handleGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (tc *testClient) handleQuery(w http.ResponseWriter, r *http.Request) {
-	bugs := tc.getBugList()
+	offset := r.URL.Query().Get("offset")
+	bugs := BugList{}
+	if offset == "0" {
+		bugs = tc.getBugList()
+	}
+
 	b, err := json.Marshal(bugs)
 	if err != nil {
 		fmt.Printf("Unable to marshal bug data: %v\n", err)
@@ -139,7 +144,7 @@ func (tc testClient) UpdateBug(_ int, _ BugUpdate) error {
 	return nil
 }
 
-func (tc testClient) Search(query Query) ([]*Bug, error) {
+func (tc *testClient) Search(query Query) ([]*Bug, error) {
 	srv := tc.getTestServer(tc.path)
 	defer srv.Close()
 

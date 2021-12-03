@@ -82,10 +82,10 @@ func (b Bug) BlockerRequested() bool {
 }
 
 func (b Bug) Untriaged() bool {
-	if b.Severity == "---" {
+	if b.Severity == "unspecified" || b.Severity == "" {
 		return true
 	}
-	if b.Priority == "---" {
+	if b.Priority == "unspecified" || b.Priority == "" {
 		return true
 	}
 	if b.BlockerRequested() {
