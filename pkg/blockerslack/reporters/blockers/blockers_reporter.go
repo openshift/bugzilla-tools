@@ -350,9 +350,6 @@ func (c *BlockersReporter) sync(ctx context.Context, syncCtx factory.SyncContext
 func Report(ctx context.Context, orgData *teams.OrgData, bugData *bugs.BugData, recorder events.Recorder, config *config.OperatorConfig) (peopleNotificationMap notificationMap, teamNotificationMap notificationMap) {
 	teamsWithChannel := []string{}
 	for team, teamInfo := range orgData.Teams {
-		if team != "OpenShift Installer" {
-			continue
-		}
 		if teamInfo.SlackChan != "" {
 			teamsWithChannel = append(teamsWithChannel, team)
 		}
