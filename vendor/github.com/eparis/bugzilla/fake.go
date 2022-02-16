@@ -18,6 +18,7 @@ package bugzilla
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -140,6 +141,14 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 		return true, nil
 	}
 	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+}
+
+// SetAuthMethod doesn't do anything and you can only set a blank string
+func (c *Fake) SetAuthMethod(authMethod string) error {
+	if authMethod != "" {
+		return fmt.Errorf("Only support blank authmethod")
+	}
+	return nil
 }
 
 // the Fake is a Client

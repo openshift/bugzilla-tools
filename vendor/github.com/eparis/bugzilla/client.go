@@ -33,7 +33,10 @@ import (
 )
 
 const (
-	methodField = "method"
+	methodField         = "method"
+	AuthBearer          = "bearer"
+	AuthQuery           = "query"
+	AuthXBugzillaAPIKey = "x-bugzilla-api-key"
 )
 
 type Client interface {
@@ -46,6 +49,7 @@ type Client interface {
 	GetExternalBugPRsOnBug(id int) ([]ExternalBug, error)
 	UpdateBug(id int, update BugUpdate) error
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	SetAuthMethod(authMethod string) error
 
 	WithCGIClient(user, password string) Client
 	// only supported with CGI client
@@ -62,15 +66,24 @@ func NewClient(getAPIKey func() []byte, endpoint string) Client {
 }
 
 type client struct {
-	logger    *logrus.Entry
-	client    *http.Client
-	cgiClient *bugzillaCGIClient
-	endpoint  string
-	getAPIKey func() []byte
+	logger     *logrus.Entry
+	client     *http.Client
+	cgiClient  *bugzillaCGIClient
+	endpoint   string
+	getAPIKey  func() []byte
+	authMethod string
 }
 
 // the client is a Client impl
 var _ Client = &client{}
+
+func (c *client) SetAuthMethod(authMethod string) error {
+	if authMethod != "" && authMethod != AuthBearer && authMethod != AuthQuery && authMethod != AuthXBugzillaAPIKey {
+		return fmt.Errorf("invalid auth-method %s. Valid values are bearer,query or x-bugzilla-api-key", authMethod)
+	}
+	c.authMethod = authMethod
+	return nil
+}
 
 func (c *client) Endpoint() string {
 	return c.endpoint
@@ -271,13 +284,24 @@ func (c *client) UpdateBug(id int, update BugUpdate) error {
 func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
 	logger = logger.WithField("url", obfuscatedURL(req.URL.String())).WithField("verb", req.Method)
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
-		// some BugZilla servers are too old and can't handle the header.
-		// some don't want the query parameter. We can set both and keep
-		// everyone happy without negotiating on versions
-		req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
-		values := req.URL.Query()
-		values.Add("api_key", string(apiKey))
-		req.URL.RawQuery = values.Encode()
+		switch c.authMethod {
+		case AuthBearer:
+			req.Header.Set("Authorization", "Bearer "+string(apiKey))
+		case AuthQuery:
+			values := req.URL.Query()
+			values.Add("api_key", string(apiKey))
+			req.URL.RawQuery = values.Encode()
+		case AuthXBugzillaAPIKey:
+			req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
+		default:
+			// If there is no auth method specified, we use a union of `query` and
+			// `x-bugzilla-api-key` to mimic the previous default behavior which attempted
+			// to satisfy different BugZilla server versions.
+			req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
+			values := req.URL.Query()
+			values.Add("api_key", string(apiKey))
+			req.URL.RawQuery = values.Encode()
+		}
 	}
 	start := time.Now()
 	resp, err := c.client.Do(req)

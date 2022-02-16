@@ -344,7 +344,11 @@ func BugzillaClient(cmd *cobra.Command) (bugzilla.Client, error) {
 	}
 	generator = &generatorFunc
 
-	return bugzilla.NewClient(*generator, endpoint), nil
+	client := bugzilla.NewClient(*generator, endpoint)
+	if err := client.SetAuthMethod(bugzilla.AuthBearer); err != nil {
+		return nil, err
+	}
+	return client, nil
 }
 
 func getAllOpenBugsQuery() bugzilla.Query {
