@@ -70,7 +70,7 @@ func GetBugMaps(bugData *bugs.BugData) map[string]bugs.TeamMap {
 }
 
 func GetCiComponentMap(version string) (map[string]sippyv1.MinimumPassRatesByComponent, error) {
-	resp, err := http.Get(fmt.Sprintf("https://sippy.ci.openshift.org/json?release=%s", version))
+	resp, err := http.Get(fmt.Sprintf("https://sippy.dptools.openshift.org/json?release=%s", version))
 	if err != nil {
 		return nil, err
 	}
