@@ -2,7 +2,6 @@ package slo
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -70,32 +69,34 @@ func GetBugMaps(bugData *bugs.BugData) map[string]bugs.TeamMap {
 }
 
 func GetCiComponentMap(version string) (map[string]sippyv1.MinimumPassRatesByComponent, error) {
-	resp, err := http.Get(fmt.Sprintf("https://sippy.dptools.openshift.org/json?release=%s", version))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
-	}
-
-	type Report map[string]struct {
-		MinimumJobPassRatesByComponent []sippyv1.MinimumPassRatesByComponent `json:"minimumJobPassRatesByComponent"`
-	}
-	var r Report
-	if err := json.Unmarshal(body, &r); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal release-%s sippy state: %v", version, err)
-	}
-
-	result := map[string]sippyv1.MinimumPassRatesByComponent{}
-	for _, c := range r[version].MinimumJobPassRatesByComponent {
-		result[c.Name] = c
-	}
-	return result, nil
+	// TODO: Sippy has deprecated this API, so we're disabling this logic to allow the server to start up properly.
+	//resp, err := http.Get(fmt.Sprintf("https://sippy.dptools.openshift.org/json?release=%s", version))
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer resp.Body.Close()
+	//body, err := ioutil.ReadAll(resp.Body)
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
+	//}
+	//if resp.StatusCode != http.StatusOK {
+	//	return nil, fmt.Errorf("failed to download release-%s sippy stats (%d): %v", version, resp.StatusCode, string(body))
+	//}
+	//
+	//type Report map[string]struct {
+	//	MinimumJobPassRatesByComponent []sippyv1.MinimumPassRatesByComponent `json:"minimumJobPassRatesByComponent"`
+	//}
+	//var r Report
+	//if err := json.Unmarshal(body, &r); err != nil {
+	//	return nil, fmt.Errorf("failed to unmarshal release-%s sippy state: %v", version, err)
+	//}
+	//
+	//result := map[string]sippyv1.MinimumPassRatesByComponent{}
+	//for _, c := range r[version].MinimumJobPassRatesByComponent {
+	//	result[c.Name] = c
+	//}
+	//return result, nil
+	return map[string]sippyv1.MinimumPassRatesByComponent{}, nil
 }
 
 func getCountResult(which string, bugMaps map[string]bugs.TeamMap, teamSLO map[string]sloAPI.Data, teamInfo teams.TeamInfo) sloAPI.Result {
