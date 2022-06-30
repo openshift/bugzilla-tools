@@ -241,6 +241,18 @@ func bugsNeedBlockerFlagPriorityQuery() bugzilla.Query {
 	return query
 }
 
+func bugsNeedBlockerFlagPmScoreQuery() bugzilla.Query {
+	query := needsBlockerFlagQuery()
+	query.Advanced = append(query.Advanced, []bugzilla.AdvancedQuery{
+		{
+			Field: "cf_pm_score",
+			Op:    "greaterthan",
+			Value: "140",
+		},
+	}...)
+	return query
+}
+
 func bugsNeedBlockerFlagAction() bugzilla.BugUpdate {
 	return bugzilla.BugUpdate{
 		Flags: []bugzilla.FlagChange{
@@ -342,6 +354,13 @@ func doGenerate() error {
 			Name:        "bugsNeedBlockerFlagPriority",
 			Description: "All bugs that should have at least blocker? based on the priority",
 			Query:       bugsNeedBlockerFlagPriorityQuery(),
+			Update:      bugsNeedBlockerFlagAction(),
+			Default:     true,
+		},
+		{
+			Name:        "bugsNeedBlockerFlagPmScore",
+			Description: "All bugs that have PM score greater than 140",
+			Query:       bugsNeedBlockerFlagPmScoreQuery(),
 			Update:      bugsNeedBlockerFlagAction(),
 			Default:     true,
 		},

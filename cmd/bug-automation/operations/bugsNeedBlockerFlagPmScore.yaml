@@ -1,0 +1,49 @@
+default: true
+description: All bugs that have PM score greater than 140
+name: bugsNeedBlockerFlagPmScore
+query:
+  advanced:
+  - field: component
+    negate: true
+    op: equals
+    value: Documentation
+  - field: component
+    negate: true
+    op: equals
+    value: Migration Tooling
+  - field: component
+    negate: true
+    op: equals
+    value: odo
+  - field: flagtypes.name
+    negate: true
+    op: substring
+    value: blocker
+  - field: target_release
+    op: notregexp
+    value: ^4\.[0-9]+\.z$|premerge$
+  - field: version
+    op: notregexp
+    value: ^2\.
+  - field: version
+    op: notregexp
+    value: ^3\.
+  - field: cf_pm_score
+    op: greaterthan
+    value: "140"
+  classification:
+  - Red Hat
+  include_fields:
+  - id
+  product:
+  - OpenShift Container Platform
+  status:
+  - NEW
+  - ASSIGNED
+  - POST
+  - ON_DEV
+update:
+  flags:
+  - name: blocker
+    status: '?'
+  minor_update: true
